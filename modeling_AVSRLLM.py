@@ -332,7 +332,7 @@ class AVSR_LLMs(nn.Module):
         else:
         
             audio_features = self.encode_audio(inputs["audio"], max(inputs["lengths"]), is_trainval) if self.modality in ["audio", "audiovisual"] else None
-            video_features = self.encode_video(inputs["video"], self.pretrain_raven_enc_video) if self.modality in ["video", "audiovisual"] else None
+            video_features = self.encode_video(inputs["video"]) if self.modality in ["video", "audiovisual"] else None
             
             
             text_embeddings_ = self.llm.model.embed_tokens(inputs["tokens"])
@@ -426,7 +426,7 @@ class AVSR_LLMs(nn.Module):
             
             return audio_enc, video_enc
     
-    def encode_video(self, videos, pretrain_raven_enc_video):
+    def encode_video(self, videos):
             
         video_enc = self.video_encoder.extract_finetune(source={'video': torch.reshape(videos,(-1,videos.shape[2],videos.shape[1],videos.shape[3],videos.shape[-1])),'audio': None})[0]
         if self.downsample_ratio_video != 1:
