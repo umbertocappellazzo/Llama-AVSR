@@ -401,7 +401,7 @@ class AVSR_LLMs(nn.Module):
             audiovisual_temp = self.audiovisual_encoder.extract_finetune(source={'video': torch.reshape(videos,(-1,videos.shape[2],videos.shape[1],videos.shape[3],videos.shape[-1])),'audio': audios.transpose(1, 2)})[0]
             if self.downsample_ratio_audiovisual != 1:
                 audiovisual_enc = [audiovisual_temp[:, x:x + self.downsample_ratio_audiovisual, :].view(audiovisual_temp.shape[0], 1, -1) for x in range(0, audiovisual_temp.shape[1], self.downsample_ratio_audiovisual)]
-                rest = audiovisual_temp.shape[1] % self.downsample_ratio_audio
+                rest = audiovisual_temp.shape[1] % self.downsample_ratio_audiovisual
                 if rest == 0:
                     audiovisual_enc = torch.stack(audiovisual_enc, dim=1).squeeze(2)
                 else:
