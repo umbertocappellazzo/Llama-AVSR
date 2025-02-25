@@ -22,7 +22,7 @@ IGNORE_INDEX = -100
 class AVSR_LLMs(nn.Module):
     def __init__(self, modality, pretrain_avhubert_enc_video, pretrain_avhubert_enc_audio, 
                  pretrain_avhubert_enc_audiovisual, use_lora_avhubert, llm_model, hidden_size, intermediate_size, tokenizer, prompt, pad_id, 
-                 downsample_ratio_audio, downsample_ratio_video, downsample_ratio_audiovisual, single_projector_avhubert, audio_encoder_name, num_prompts, 
+                 downsample_ratio_audio, downsample_ratio_video, downsample_ratio_audiovisual, single_projector_avhubert, audio_encoder_name, 
                  unfrozen_modules, max_dec_tokens, num_beams, PETF_LLM_name = None, peft_config_llm = None,
                  ):
         
@@ -38,7 +38,6 @@ class AVSR_LLMs(nn.Module):
         self.downsample_ratio_video = downsample_ratio_video
         self.downsample_ratio_audiovisual = downsample_ratio_audiovisual if modality == "audiovisual_avhubert" else None
         self.audio_encoder_name = audio_encoder_name
-        self.num_prompts = num_prompts
         self.llm_model = llm_model
         self.peft_config_llm = peft_config_llm
         self.PETF_LLM_name = PETF_LLM_name
