@@ -3,11 +3,8 @@ import torchaudio
 from cosine import WarmupCosineScheduler
 from pytorch_lightning import LightningModule
 from transformers import AutoTokenizer
-from Llama_adapters import Adapter_config_llama
-from CLIP_adapter import Adapter_config_vision
 from Llama_LoRA import LoRA_config
 from modeling_AVSRLLM import AVSR_LLMs
-from peft import LoraConfig
 from tokenizers.processors import TemplateProcessing
 
 DEFAULT_PAD_TOKEN = "<pad>"
