@@ -73,8 +73,9 @@ class ModelModule_LLM(LightningModule):
         
         if args.add_PETF_LLM:
             
-            IS_LLAMA3 = True if args.llm_model == "meta-llama/Meta-Llama-3-8B" or args.llm_model == "meta-llama/Meta-Llama-3.1-8B"  else False
-            lora_config_llm = LoRA_config(args.reduction_lora, args.alpha, IS_LLAMA3)
+            IS_LLAMA3 = True if args.llm_model == "meta-llama/Meta-Llama-3.1-8B" else False
+            IS_TINYLLAMA = True if args.llm_model == "TinyLlama/TinyLlama_v1.1" else False
+            lora_config_llm = LoRA_config(args.reduction_lora, args.alpha, IS_LLAMA3, IS_TINYLLAMA)
             
             self.model = AVSR_LLMs(modality = args.modality,  
                                    pretrain_avhubert_enc_video = args.pretrain_avhubert_enc_video_path, 
