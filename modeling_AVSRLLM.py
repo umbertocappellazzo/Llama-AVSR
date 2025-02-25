@@ -253,7 +253,7 @@ class AVSR_LLMs(nn.Module):
                 
                 ignore_count += prompt_embeddings.shape[1]
                 
-                audiovisual_features = self.audiovisual_proj(audiovisual_features, atts= None) if self.use_qformer else self.audiovisual_proj(audiovisual_features)
+                audiovisual_features = self.audiovisual_proj(audiovisual_features)
                 
                 text_embeddings = torch.cat(
                     [torch.cat([text_embeddings[:, 0, :].unsqueeze(1), audiovisual_features], dim=1), text_embeddings[:, 1:, :]], 
@@ -294,7 +294,7 @@ class AVSR_LLMs(nn.Module):
                     video_ends = torch.tensor([self.tokenizer.vocab["</video>"]], device = text_embeddings.device).expand(inputs["tokens"].shape[0],-1)
                     video_ends = self.llm.model.embed_tokens(video_ends)
                     
-                    video_features = self.video_proj(video_features, atts= None) if self.use_qformer else self.video_proj(video_features)
+                    video_features = self.video_proj(video_features)
                     
                     video_inputs = torch.cat([torch.cat([video_starts, video_features], dim=1), video_ends], dim=1)
                     
@@ -361,7 +361,7 @@ class AVSR_LLMs(nn.Module):
                 video_ends = torch.tensor([self.tokenizer.vocab["</video>"]], device = text_embeddings.device).expand(inputs["tokens"].shape[0],-1)
                 video_ends = self.llm.model.embed_tokens(video_ends)
                 
-                video_features = self.video_proj(video_features, atts= None) if self.use_qformer else self.video_proj(video_features)
+                video_features = self.video_proj(video_features)
                 
                 video_inputs = torch.cat([torch.cat([video_starts, video_features], dim=1), video_ends], dim=1)
                 
