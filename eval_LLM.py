@@ -31,14 +31,18 @@ def parse_args():
         help="Experiment name",
     )
     parser.add_argument(
+        "--project-wandb",
+        default=None ,
+        type=str,
+        help="Name of the wandb project.",
+    )
+    parser.add_argument(
         "--modality",
         default=None,
         type=str,
         help="Type of input modality",
         choices=["audio", "video", "audiovisual"],
     )
-    
-
     parser.add_argument(
         "--pretrained-model-path",                      
         default= None,
