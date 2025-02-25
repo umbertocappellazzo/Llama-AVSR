@@ -79,6 +79,14 @@ def parse_args():
         help= "Whether to apply LoRA to the transformer module of AV-HuBERT."
         )
     parser.add_argument(
+        "--single-projector-avhubert",
+        default= False,
+        type=bool,
+        help="""This parameter is used only when modality == audiovisual_avhubert. If set to True, a single audio-visual projector
+                is trained on top of the audio-visual features output by AV-HuBERT. If set to False, audio and video features
+                are computed twice with AV-HuBERT with the other modality set to None""",
+    )
+    parser.add_argument(
         "--llm-model",
         default= None,
         type=str,
