@@ -1,0 +1,15 @@
+numpy==1.26.3 
+torch==2.2.1
+torchaudio==2.2.1
+torchvision==0.17.1
+pytorch-lightning==2.3.3
+wandb
+transformers==4.43.2
+soundfile==0.12.1
+av==12.3.0
+python-speech-features==0.6
+scipy==1.10.0
+opencv-python==4.5.4.60
+sentencepiece==0.1.96
+editdistance==0.6.0
+
