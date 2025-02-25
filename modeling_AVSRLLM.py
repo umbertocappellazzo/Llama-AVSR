@@ -331,7 +331,7 @@ class AVSR_LLMs(nn.Module):
                 
         else:
         
-            audio_features = self.encode_audio(inputs["audio"], max(inputs["lengths"]), self.pretrain_lrs3_enc_audio , is_trainval) if self.modality in ["audio", "audiovisual"] else None
+            audio_features = self.encode_audio(inputs["audio"], max(inputs["lengths"]), is_trainval) if self.modality in ["audio", "audiovisual"] else None
             video_features = self.encode_video(inputs["video"], self.pretrain_raven_enc_video) if self.modality in ["video", "audiovisual"] else None
             
             
@@ -435,7 +435,7 @@ class AVSR_LLMs(nn.Module):
             
         return video_enc
     
-    def encode_audio(self, audios, max_len, pretrain_lrs3_enc_audio, is_trainval):
+    def encode_audio(self, audios, max_len, is_trainval):
             
         if "whisper" in self.audio_encoder_name:
             audios = audios.to(torch.float32)
