@@ -164,7 +164,7 @@ def parse_args():
         "--audio-encoder-name",
         default = None, # "openai/whisper-medium.en/small.en/base.en/tiny.en/large",   "microsoft/wavlm-large"
         type = str,
-        choices= ["openai/whisper-medium.en", "microsoft/wavlm-large"]
+        choices= ["openai/whisper-medium.en", "microsoft/wavlm-large", "av-hubert"]
         )
     parser.add_argument(
         "--unfrozen_modules",
@@ -293,7 +293,7 @@ def parse_args():
         "--lr",
         type=float,
         default=1e-3,   # 1e-3 for ASR and AVSR, 5e-4 for VSR.
-        help="Learning rate. (Default: 1e-3)",
+        help="Learning rate.",
     )
     parser.add_argument(
         "--weight-decay",
