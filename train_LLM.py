@@ -28,6 +28,8 @@ def get_trainer(args):
     lr_monitor = LearningRateMonitor(logging_interval="step")
     callbacks = [checkpoint, lr_monitor]
 
+    find_unused_parameters_flag = False if args.modality == 'audio' else True
+
     return Trainer(
         precision='bf16-true',
         sync_batchnorm=True,
@@ -37,7 +39,7 @@ def get_trainer(args):
         num_nodes=args.num_nodes,
         devices=args.gpus,
         accelerator="gpu",
-        strategy= DDPStrategy(),  
+        strategy= DDPStrategy(find_unused_parameters= find_unused_parameters_flag),  
         callbacks=callbacks,
         reload_dataloaders_every_n_epochs=1,
         logger=WandbLogger(name=args.exp_name, project=args.project_wandb),
