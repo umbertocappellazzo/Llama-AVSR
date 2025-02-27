@@ -13,8 +13,8 @@ from Llama_LoRA import LlamaForCausalLM_lora
 from transformers import WhisperModel, LlamaForCausalLM, AutoFeatureExtractor, WavLMModel
 
 import fairseq
-from ..av_hubert.avhubert.hubert_asr import AVHubertSeq2Seq, AVHubertSeq2SeqConfig
-from ..av_hubert.avhubert.hubert_lora import AVHubertModel_lora
+from .av_hubert.avhubert.hubert_asr import AVHubertSeq2Seq, AVHubertSeq2SeqConfig
+from .av_hubert.avhubert.hubert_lora import AVHubertModel_lora
 import math
 
 IGNORE_INDEX = -100
