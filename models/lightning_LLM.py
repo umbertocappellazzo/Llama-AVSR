@@ -1,6 +1,6 @@
 import torch
 import torchaudio
-from .utils.cosine import WarmupCosineScheduler
+from ..utils.cosine import WarmupCosineScheduler
 from pytorch_lightning import LightningModule
 from transformers import AutoTokenizer
 from Llama_LoRA import LoRA_config
