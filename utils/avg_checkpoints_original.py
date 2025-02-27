@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Apr 24 13:32:05 2024
-
-@author: umbertocappellazzo
-"""
-
 import os
 
 import torch

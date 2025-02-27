@@ -3,9 +3,9 @@ import os
 from argparse import ArgumentParser
 import torch
 import time
-from avg_checkpoints_original import ensemble_original
+from utils.avg_checkpoints_original import ensemble_original
 from datamodule.data_module_LLM import DataModule_LLM
-from lightning_LLM import ModelModule_LLM
+from models.lightning_LLM import ModelModule_LLM
 
 from pytorch_lightning import seed_everything, Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor, ModelCheckpoint
