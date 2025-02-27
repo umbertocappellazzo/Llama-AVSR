@@ -16,3 +16,48 @@ Recognition Learners**](https://arxiv.org/pdf/2409.12319)", ***U. Cappellazzo***
 <p align="center">
     <img src="assets/main_figure.png" width="50%"> <br>
 </p>
+
+## Setup 🛠 
+### 1) Installation
+
+Install necessary dependencies: 
+
+```bash
+   pip install -r requirements.txt
+   cd av_hubert/fairseq
+   pip install --editable ./
+```
+
+<details>
+  <summary><strong>Issues with opencv-python?</strong></summary>
+If you encounter issues with opencv-python (e.g., ImportError: libGL.so.1: cannot open shared object file: No such file or directory), pip uninstall opencv-python and pip install opencv-python-headless. This trick solves the issue.
+
+</details>
+
+### 2) Datasets Pre-processing
+
+We rigoroulsy follow auto-avsr [paper](https://arxiv.org/abs/2303.14307) to pre-process the LRS3 and VoxCeleb 2 datasets. All the steps 
+to achieve this can be found [here](https://github.com/mpc001/auto_avsr/tree/main/preparation). 
+
+For LRS3, the tree-structure of the directory is like:
+
+```
+LRS3  
+└───labels
+|     lrs3_train_transcript_lengths_seg16s.csv 
+|     lrs3_test_transcript_lengths_seg16s.csv 
+|       
+└───lrs3
+    └─── lrs3_text_seg16s
+    |     └─── ...
+    └───  lrs3_video_seg16s
+          └─── ...
+```
+
+### 3) Labels files Download
+
+The labels files in LRS3/labels undergo some processing to make it fit Llama-AVSR. For example, we lower the transcription and discard samples whose length is higher than 1s to avoid training instability and peak GPU memory usage. Based on the desired training setting, the processed labels can be accesse below. Once downloaded, they must be moved to dataset/labels subfolder, where dataset can be LRS3 or VoxCeleb2. 
+
+
+
+
