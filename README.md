@@ -14,5 +14,5 @@ Recognition Learners**](https://arxiv.org/pdf/2409.12319)", ***U. Cappellazzo***
 **Llama-ASVR** is a Multimodal LLM (MLLM) trained to perform the tasks of ASR, VSR, and AVSR. As such, it comprises three main components: **1)** pre-trained audio and video encoders, **2)** audio/video MLP projector layers, and **3)** a Llama-based LLM, which is parameter-efficiently finetuned via LoRA. **Llama-AVSR** is trained on three different amount of data (30h, 433h, 1756h) and tasks, achieving sota results when tested on the LRS3 dataset. Due to its modularity, **Llama-AVSR** facilitates the seamless integration of various pre-trained encoders and LLMs of different sizes, letting the user choose the configuration based on specific requirements.
 
 <p align="center">
-    <img src="assets/main_figure.png" width="90%"> <br>
+    <img src="assets/main_figure.png" width="50%"> <br>
 </p>
