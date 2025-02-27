@@ -5,8 +5,8 @@ Created on Sun Mar 10 23:09:38 2024
 
 @author: umbertocappellazzo
 """
-import sys
-sys.path.append("..")
+#import sys
+#sys.path.append("..")
 import torch
 from torch import nn
 
