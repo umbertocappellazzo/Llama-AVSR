@@ -10,7 +10,7 @@ sys.path.append("..")
 import torch
 from torch import nn
 
-from Llama_LoRA import LlamaForCausalLM_lora
+from .Llama_LoRA import LlamaForCausalLM_lora
 from transformers import WhisperModel, LlamaForCausalLM, AutoFeatureExtractor, WavLMModel
 
 import fairseq
