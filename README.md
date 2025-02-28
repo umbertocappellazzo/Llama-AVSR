@@ -66,6 +66,7 @@ The label files in `[LRS3]/[labels]` undergo some processing to make them fit Ll
 
 ## Training Stage 🏋️
 
+# Preliminaries 
 Before starting the training process, make sure you **1)** have a wandb account to track your experiments and **2)** have access to the pre-trained LLMs like Llama 3.1-8B (i.e., you need to request access from HF [here](https://huggingface.co/meta-llama/Llama-3.1-8B)). Also, for the VSR and AVSR task, you need to download the AV-HuBERT Large model pretrained on LRS3 + VoxCeleb2, accessible [here](https://dl.fbaipublicfiles.com/avhubert/model/lrs3_vox/clean-pretrain/large_vox_iter5.pt).
 
 To set up the desired experiment to run, we have several main arguments to define, listed below (all arguments can be inspected in the `train_LLM.py` script):
@@ -103,7 +104,15 @@ There are additional arguments to define, which are mainly modality-specific. Mo
 
 </details>
 
+# ASR Task 🗣️
 
+# VSR Task 📹
+
+# AVSR Task 🗣️📹
+
+## Inference ☄️
+
+## Model Zoo 🤩
 
 ## Citation 📝
 
