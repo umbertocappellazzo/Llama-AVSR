@@ -106,9 +106,9 @@ There are additional arguments to define, which are mainly modality-specific. Mo
 
 # ASR Task 🗣️
 
-# VSR Task 📹
+# VSR Task 👀
 
-# AVSR Task 🗣️📹
+# AVSR Task 🗣👀
 
 ## Inference ☄️
 
