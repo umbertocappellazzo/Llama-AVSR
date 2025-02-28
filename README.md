@@ -54,21 +54,21 @@ LRS3
           └─── ...
 ```
 
-### 3) Labels files Download
+### 3) Label Files Download
 
-The labels files in LRS3/labels undergo some processing to make it fit Llama-AVSR. For example, we lowercase the transcription and discard samples whose length is higher than a specific threshold to avoid training instability and peak GPU memory usage. Based on the desired training setting, the processed labels can be accesse below. Once downloaded, they must be moved to dataset/labels subfolder, where dataset can be LRS3 or VoxCeleb2. 
+The label files in `[LRS3]/[labels]` undergo some processing to make them fit Llama-AVSR. For example, we lowercase the transcription and discard samples whose length is higher than a specific threshold to avoid training instability and peak GPU memory usage. Based on the desired training setting, the processed labels can be accessed below. Once downloaded, they must be moved to dataset/labels subfolder, where dataset can be LRS3 or VoxCeleb2. 
 
 | Label Files | Dataset(s) | Hours |
 |-----|:-----:|:-----:|
-|['lrs3_30h_train_transcript_lengths_seg16s_LLM_lowercase_12.csv'](https://drive.google.com/file/d/11t5BDnl05p3A5kR1rIaSosW2vXK915BN/view?usp=drive_link)|"Low-Resource LRS3"|30|
+|['lrs3_30h_train_transcript_lengths_seg16s_LLM_lowercase_12.csv'](https://drive.google.com/file/d/11t5BDnl05p3A5kR1rIaSosW2vXK915BN/view?usp=drive_link)|"Low-Resource" LRS3 ("trainval")|30|
 |['lrs3_train_transcript_lengths_seg16s_LLM_lowercase_25.csv'](https://drive.google.com/file/d/1ytq7-fuC6R7G3r2MQPAWYXkJac9Ja3UB/view?usp=drive_link)|LRS3|433|
 |['lrs3vox2en_train_transcript_lengths_seg16s_LLM_lowercase_25.csv'](https://drive.google.com/file/d/123Y7uUfppghmmJUhwum7fKGHYjbHJXsC/view?usp=drive_link)|LRS3 + VoxCeleb2|1756|
 
 ## Training Stage 🏋️
 
-Before starting the training process, make sure you **1)** have a wandb account to track your experiments and **2)** have access to pre-trained LLMs like Llama 3.1-8B. Also, for the VSR and AVSR task, you need to download the AV-HuBERT Large model pretrained on LRS3 + VoxCeleb2, accessible [here](https://dl.fbaipublicfiles.com/avhubert/model/lrs3_vox/clean-pretrain/large_vox_iter5.pt).
+Before starting the training process, make sure you **1)** have a wandb account to track your experiments and **2)** have access to the pre-trained LLMs like Llama 3.1-8B (i.e., you need to request access from HF [here](https://huggingface.co/meta-llama/Llama-3.1-8B)). Also, for the VSR and AVSR task, you need to download the AV-HuBERT Large model pretrained on LRS3 + VoxCeleb2, accessible [here](https://dl.fbaipublicfiles.com/avhubert/model/lrs3_vox/clean-pretrain/large_vox_iter5.pt).
 
-To set up the desired experiment to run, we have several main arguments to define, listed below (all arguments can be inspected in the `train_LLM.py` scripts):
+To set up the desired experiment to run, we have several main arguments to define, listed below (all arguments can be inspected in the `train_LLM.py` script):
 <details open>
   <summary><strong>Main Arguments</strong></summary>
     
@@ -86,7 +86,8 @@ To set up the desired experiment to run, we have several main arguments to defin
 There are additional arguments to define, which are mainly modality-specific. More details below.
 
 <details>
-  <summary><strong>Main Arguments</strong></summary>
+  <summary><strong>Additional Arguments</strong></summary>
+    
 - `prompt-audio`: This is the prompt used for the ASR task. By default, this is set to `Transcribe speech to text.`. Likewise, we define the prompt for the VSR task (`prompt-video`) and AVSR task (`prompt-audiovisual`).
 - `pretrain-avhubert-enc-video-path`: This is the path to the pre-trained AV-HuBERT video encoder.
 - `audio-encoder-name`: The pre-trained audio encoder. Choices: [`openai/whisper-medium.en`, `microsoft/wavlm-large`, `av-hubert`].
@@ -95,8 +96,8 @@ There are additional arguments to define, which are mainly modality-specific. Mo
 - `reduction_lora` and `alpha`: if we fine-tune the LLM via LoRA, we need to define the factor by which we reduce the hidden size (`reduction_lora`) and the scaling factor (`alpha`). 
 - `max-epochs`: Number of epochs to train Llama-AVSR.
 - `num-average-epochs`: We average the last `num-average-epochs` ckpts.
-- `downsample-ratio-audio`: This arguments defines the compression rate to apply to the audio tokens before the LLM. Likewise, we define this value for the video tokens (`downsample-ratio-video`).
-- `max-frames-audio`: Max number of audio frames in a batch. This number can be adjusted based on the own GPU memory. For video and audio-visual we define the same value. 
+- `downsample-ratio-audio`: This argument defines the compression rate to apply to the audio tokens before the LLM. Likewise, we define the compression rate for the video tokens (`downsample-ratio-video`).
+- `max-frames-audio`: Max number of audio frames in a batch. This number can be adjusted based on the own GPU memory. For video and audio-visual we define a similar value.  
 - `lr`: The learning rate of the AdamW optimizer. For ASR and AVSR, we set it to `1e-3`, for VSR to `5e-4`.
 - `weight-decay`: The weight decay of the optimizer. Default: `0.1`.
 
