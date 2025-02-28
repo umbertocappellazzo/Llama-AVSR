@@ -102,3 +102,21 @@ There are additional arguments to define, which are mainly modality-specific. Mo
 - `weight-decay`: The weight decay of the optimizer. Default: `0.1`.
 
 </details>
+
+
+
+## Citation 📝
+
+If you find this project useful for your research or applications, please kindly cite our work:
+
+```latex
+@inproceedings{cappellazzo2024large,
+  title={Large Language Models are Strong Audio-Visual Speech Recognition Learners},
+  author={Cappellazzo, Umberto and Kim, Minsu and Chen, Honglie and Ma, Pingchuan and Petridis, Stavros and Falavigna, Daniele and Brutti, Alessio and Pantic, Maja},
+  booktitle={ICASSP 2025-2025 IEEE International Conference on Acoustics, Speech and Signal Processing (ICASSP)},
+  pages={1--5},
+  year={2025},
+  organization={IEEE}
+}
+
+```
