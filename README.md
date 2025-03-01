@@ -66,7 +66,7 @@ The label files in `[LRS3]/[labels]` undergo some processing to make them fit Ll
 
 ## Training Stage 🏋️
 
-# Preliminaries 
+### Preliminaries 
 Before starting the training process, make sure you **1)** have a wandb account to track your experiments and **2)** have access to the pre-trained LLMs like Llama 3.1-8B (i.e., you need to request access from HF [here](https://huggingface.co/meta-llama/Llama-3.1-8B)). Also, for the VSR and AVSR task, you need to download the AV-HuBERT Large model pretrained on LRS3 + VoxCeleb2, accessible [here](https://dl.fbaipublicfiles.com/avhubert/model/lrs3_vox/clean-pretrain/large_vox_iter5.pt).
 
 To set up the desired experiment to run, we have several main arguments to define, listed below (all arguments can be inspected in the `train_LLM.py` script):
@@ -96,7 +96,7 @@ There are additional arguments to define, which are mainly modality-specific. Mo
 - `add_PETF_LLM`: Whether to fine-tune the LLM via LoRA. Set to `lora` if we use LoRA, else `None`.
 - `reduction_lora` and `alpha`: if we fine-tune the LLM via LoRA, we need to define the factor by which we reduce the hidden size (`reduction_lora`) and the scaling factor (`alpha`). 
 - `max-epochs`: Number of epochs to train Llama-AVSR.
-- `num-average-epochs`: We average the last `num-average-epochs` ckpts.
+- `num-average-epochs`: We average the last `num-average-epochs` ckpts. Default: `4`.
 - `downsample-ratio-audio`: This argument defines the compression rate to apply to the audio tokens before the LLM. Likewise, we define the compression rate for the video tokens (`downsample-ratio-video`).
 - `max-frames-audio`: Max number of audio frames in a batch. This number can be adjusted based on the own GPU memory. For video and audio-visual we define a similar value.  
 - `lr`: The learning rate of the AdamW optimizer. For ASR and AVSR, we set it to `1e-3`, for VSR to `5e-4`.
@@ -104,11 +104,19 @@ There are additional arguments to define, which are mainly modality-specific. Mo
 
 </details>
 
-# ASR Task 🗣️
+### ASR Task 🗣️
 
-# VSR Task 👀
+The command below trains Llama-AVSR using Whisper Medium as audio encoder, the LLM is Llama 3.1-8B (finetuned using LoRA). We reduce the audio tokens by a factor 3. We use 8 GPUs from a single node. 
 
-# AVSR Task 🗣👀
+```Shell
+python3 train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dit --project-wandb wandb_project_name \
+--exp-name exp_name --modality audio --llm-model meta-llama/Meta-Llama-3.1-8B --audio-encoder-name openai/whisper-medium.en \
+--add_PETF_LLM lora --unfrozen_modules peft_llm --reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --num-nodes 1 --gpus 8 --max-frames-audio 1000 --lr 1e-3 
+```
+
+### VSR Task 👀
+
+### AVSR Task 🗣👀
 
 ## Inference ☄️
 
