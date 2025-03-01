@@ -106,15 +106,38 @@ There are additional arguments to define, which are mainly modality-specific. Mo
 
 ### ASR Task 🗣️
 
-The command below trains Llama-AVSR using Whisper Medium as audio encoder, the LLM is Llama 3.1-8B (finetuned using LoRA). We reduce the audio tokens by a factor 3. We use 8 GPUs from a single node. 
+**Example 1.**
+
+The command below trains Llama-AVSR using `Whisper Medium` as audio encoder, the LLM is `Llama 3.1-8B` (finetuned using LoRA). We reduce the audio tokens by a factor `3`. We use `8` GPUs from a single node. 
 
 ```Shell
-python3 train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dit --project-wandb wandb_project_name \
---exp-name exp_name --modality audio --llm-model meta-llama/Meta-Llama-3.1-8B --audio-encoder-name openai/whisper-medium.en \
---add_PETF_LLM lora --unfrozen_modules peft_llm --reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --num-nodes 1 --gpus 8 --max-frames-audio 1000 --lr 1e-3 
+python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dit --project-wandb wandb_project_name \
+--exp-name ASR_ex1 --modality audio --llm-model meta-llama/Meta-Llama-3.1-8B --audio-encoder-name openai/whisper-medium.en \
+--add_PETF_LLM lora --unfrozen_modules peft_llm --reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --num-nodes 1 --gpus 8
+--max-frames-audio 1000 --lr 1e-3 
+```
+
+**Example 2.**
+
+The code to train Llama-AVSR with the same setup as above but with `AV-HuBERT Large` as audio encoder (i.e., 8th row of Table 1 in our paper) is slightly different. The command to run is as follows:
+
+```Shell
+python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dit --project-wandb wandb_project_name \
+--exp-name ASR_exp2 --modality audio --llm-model meta-llama/Meta-Llama-3.1-8B --pretrain-avhubert-enc-audio-path path_to_avhubert_ckpt
+--audio-encoder-name av-hubert --add_PETF_LLM lora --unfrozen_modules peft_llm --reduction_lora 64 --alpha 8
+--downsample-ratio-audio 3 --num-nodes 1 --gpus 8 --max-frames-audio 1000 --lr 1e-3
 ```
 
 ### VSR Task 👀
+
+For `VSR`, we use `AV-HuBERT Large` (+ LoRA), the LLM is `Llama-2-7B`. We apply a compression rate of `3`. 
+
+```Shell
+python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dit --project-wandb wandb_project_name \
+--exp-name VSR_exp --modality audio --llm-model meta-llama/Llama-2-7b-hf --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt
+--use-lora-avhubert True --add_PETF_LLM lora --unfrozen_modules peft_llm lora_avhubert --reduction_lora 64
+--alpha 8 --downsample-ratio-video 3 --num-nodes 1 --gpus 8 --max-frames-video 1000 --lr 5e-4 
+```
 
 ### AVSR Task 🗣👀
 
