@@ -195,6 +195,24 @@ def parse_args():
         help="Alpha for LoRA."
     )
     parser.add_argument(
+        "--downsample-ratio-audio",
+        default=3,
+        type=int,
+        help="Downsample ratio.",
+    )
+    parser.add_argument(
+        "--downsample-ratio-video",
+        default=3,
+        type=int,
+        help="Downsample ratio.",
+    )
+    parser.add_argument(
+        "--downsample-ratio-audiovisual",
+        default=2,
+        type=int,
+        help="Downsample ratio.",
+    )
+    parser.add_argument(
         "--train-file",
         default="lrs3_train_transcript_lengths_seg16s_LLM_lowercase_greater25.csv",
         type=str,
@@ -256,24 +274,6 @@ def parse_args():
         default=1.,
     )
     parser.add_argument(
-        "--downsample-ratio-audio",
-        default=3,
-        type=int,
-        help="Downsample ratio.",
-    )
-    parser.add_argument(
-        "--downsample-ratio-video",
-        default=3,
-        type=int,
-        help="Downsample ratio.",
-    )
-    parser.add_argument(
-        "--downsample-ratio-audiovisual",
-        default=2,
-        type=int,
-        help="Downsample ratio.",
-    )
-    parser.add_argument(
         "--max-frames-audio",
         type=int,
         default=1000,
@@ -315,6 +315,8 @@ def parse_args():
         default=None,
         help="Path of the checkpoint from which training is resumed.",
     )
+    
+# Inference parameters. 
     parser.add_argument(
         "--max-dec-tokens",
         default= 32,
