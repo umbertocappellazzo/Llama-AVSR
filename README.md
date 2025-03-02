@@ -239,7 +239,7 @@ If you find this project useful for your research or applications, please kindly
 
 ## Acknowledgement 🤝🏻
 
-This repository is built using the [**avhubert**](https://github.com/facebookresearch/av_hubert) and [**auto-avsr**](https://github.com/mpc001/auto_avsr) repositories.
+This repository relies on the [**avhubert**](https://github.com/facebookresearch/av_hubert) and [**auto-avsr**](https://github.com/mpc001/auto_avsr) repositories.
 
 ## Contact ✉️
 
