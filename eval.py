@@ -11,7 +11,7 @@ from argparse import ArgumentParser
 
 from datamodule.data_module_LLM import DataModule_LLM
 from pytorch_lightning import Trainer
-from lightning_LLM import ModelModule_LLM
+from lightning import ModelModule_LLM
 from pytorch_lightning.loggers import WandbLogger
 
 def get_trainer(args):

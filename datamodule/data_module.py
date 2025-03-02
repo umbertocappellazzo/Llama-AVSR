@@ -3,7 +3,7 @@ import os
 import torch
 from pytorch_lightning import LightningDataModule
 
-from .av_dataset_LLM import AVDataset_LLM
+from .av_dataset import AVDataset_LLM
 from .transforms import AudioTransform, VideoTransform
 
 IGNORE_INDEX = -100
