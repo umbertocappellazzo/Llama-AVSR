@@ -11,7 +11,7 @@ Recognition Learners**](https://arxiv.org/pdf/2409.12319)", ***U. Cappellazzo***
 
 ## Llama-AVSR Overwiew 🔍
 
-**Llama-ASVR** is a Multimodal LLM (MLLM) trained to perform the tasks of ASR, VSR, and AVSR. As such, it comprises three main components: **1)** pre-trained audio and video encoders, **2)** audio/video MLP projector layers, and **3)** a Llama-based LLM, which is parameter-efficiently finetuned via LoRA. **Llama-AVSR** is trained on three different amount of data (30h, 433h, 1756h) and tasks, achieving sota results when tested on the LRS3 dataset. Due to its modularity, **Llama-AVSR** facilitates the seamless integration of various pre-trained encoders and LLMs of different sizes, letting the user choose the configuration based on specific requirements.
+**Llama-ASVR** is a Multimodal LLM (MLLM) trained to perform the tasks of ASR, VSR, and AVSR. As such, it comprises three main components: **1)** pre-trained audio and video encoders, **2)** audio/video MLP projection layers, and **3)** a Llama-based LLM, which is parameter-efficiently finetuned via LoRA. **Llama-AVSR** is trained on three different amounts of data (30h, 433h, 1756h) and tasks, achieving sota results when tested on the LRS3 dataset. Due to its modularity, **Llama-AVSR** facilitates the seamless integration of various pre-trained encoders and LLMs of different sizes, letting the user choose the desired configuration based on specific requirements.
 
 <p align="center">
     <img src="assets/main_figure.png" width="50%"> <br>
@@ -36,10 +36,10 @@ If you encounter issues with opencv-python (e.g., ImportError: libGL.so.1: canno
 
 ### 2) Datasets Pre-processing
 
-We rigoroulsy follow auto-avsr [paper](https://arxiv.org/abs/2303.14307) to pre-process the LRS3 and VoxCeleb 2 datasets. All the steps 
+We rigorously follow auto-avsr [paper](https://arxiv.org/abs/2303.14307) to pre-process the LRS3 and VoxCeleb 2 datasets. All the steps 
 to achieve this can be found [here](https://github.com/mpc001/auto_avsr/tree/main/preparation).
 
-For LRS3, the tree-structure of the directory is like:
+For LRS3, the tree-structure of the directory is:
 
 ```
 LRS3  
@@ -50,13 +50,13 @@ LRS3
 └───lrs3
     └─── lrs3_text_seg16s
     |     └─── ...
-    └───  lrs3_video_seg16s
+    └─── lrs3_video_seg16s
           └─── ...
 ```
 
 ### 3) Label Files Download
 
-The label files in `[LRS3]/[labels]` undergo some processing to make them fit Llama-AVSR. For example, we lowercase the transcription and discard samples whose length is higher than a specific threshold to avoid training instability and peak GPU memory usage. Based on the desired training setting, the processed labels can be accessed below. Once downloaded, they must be moved to dataset/labels subfolder, where dataset can be LRS3 or VoxCeleb2. 
+The label files in `[LRS3]/[labels]` undergo some processing to make them fit Llama-AVSR. For example, we lowercase the transcription and discard samples whose length is higher than a specific threshold to avoid training instability and peak GPU memory usage. Based on the desired training setting, the processed labels can be accessed below. Once downloaded, they must be moved to [LRS3]/[labels]` subfolder. 
 
 | Label Files | Dataset(s) | Hours |
 |-----|:-----:|:-----:|
@@ -67,7 +67,7 @@ The label files in `[LRS3]/[labels]` undergo some processing to make them fit Ll
 ## Training Stage 🏋️
 
 ### Preliminaries 
-Before starting the training process, make sure you **1)** have a wandb account to track your experiments and **2)** have access to the pre-trained LLMs like Llama 3.1-8B (i.e., you need to request access from HF [here](https://huggingface.co/meta-llama/Llama-3.1-8B)). Also, for the VSR and AVSR task, you need to download the AV-HuBERT Large model pretrained on LRS3 + VoxCeleb2, accessible [here](https://dl.fbaipublicfiles.com/avhubert/model/lrs3_vox/clean-pretrain/large_vox_iter5.pt).
+Before starting the training process, make sure you **1)** have a wandb account to track your experiments and **2)** have access to the pre-trained LLMs like Llama 3.1-8B (i.e., you need to request access from HF [here](https://huggingface.co/meta-llama/Llama-3.1-8B)). You also have to download the AV-HuBERT Large model pretrained on LRS3 + VoxCeleb2, accessible [here](https://dl.fbaipublicfiles.com/avhubert/model/lrs3_vox/clean-pretrain/large_vox_iter5.pt).
 
 To set up the desired experiment to run, we have several main arguments to define, listed below (all arguments can be inspected in the `train_LLM.py` script):
 <details open>
@@ -84,7 +84,7 @@ To set up the desired experiment to run, we have several main arguments to defin
 
 </details>
 
-There are additional arguments to define, which are mainly modality-specific. More details below.
+There are **additional arguments** to define, which are mainly modality-specific. More details below.
 
 <details>
   <summary><strong>Additional Arguments</strong></summary>
@@ -113,7 +113,7 @@ The command below trains Llama-AVSR using `Whisper Medium` as audio encoder, the
 ```Shell
 python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
 --exp-name ASR_ex1 --modality audio --llm-model meta-llama/Meta-Llama-3.1-8B --audio-encoder-name openai/whisper-medium.en \
---add_PETF_LLM lora --unfrozen_modules peft_llm --reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --num-nodes 1 --gpus 8
+--add_PETF_LLM lora --unfrozen_modules peft_llm --reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --num-nodes 1 --gpus 8 \
 --max-frames-audio 1000 --lr 1e-3 
 ```
 
@@ -123,19 +123,19 @@ The code to train Llama-AVSR with the same setup as above but with `AV-HuBERT La
 
 ```Shell
 python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
---exp-name ASR_exp2 --modality audio --llm-model meta-llama/Meta-Llama-3.1-8B --pretrain-avhubert-enc-audio-path path_to_avhubert_ckpt
---audio-encoder-name av-hubert --add_PETF_LLM lora --unfrozen_modules peft_llm --reduction_lora 64 --alpha 8
+--exp-name ASR_exp2 --modality audio --llm-model meta-llama/Meta-Llama-3.1-8B --pretrain-avhubert-enc-audio-path path_to_avhubert_ckpt \
+--audio-encoder-name av-hubert --add_PETF_LLM lora --unfrozen_modules peft_llm --reduction_lora 64 --alpha 8 \
 --downsample-ratio-audio 3 --num-nodes 1 --gpus 8 --max-frames-audio 1000 --lr 1e-3
 ```
 
 ### VSR Task 👀
 
-For `VSR`, we use `AV-HuBERT Large` (+ LoRA), the LLM is `Llama-2-7B`. We apply a compression rate of `3`. 
+For `VSR`, we use `AV-HuBERT Large` (+ LoRA), the LLM is `Llama-2-7B` (+ LoRA). We apply a compression rate of `3`. 
 
 ```Shell
 python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
---exp-name VSR_exp --modality audio --llm-model meta-llama/Llama-2-7b-hf --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt
---use-lora-avhubert True --add_PETF_LLM lora --unfrozen_modules peft_llm lora_avhubert --reduction_lora 64
+--exp-name VSR_exp --modality audio --llm-model meta-llama/Llama-2-7b-hf --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt \
+--use-lora-avhubert True --add_PETF_LLM lora --unfrozen_modules peft_llm lora_avhubert --reduction_lora 64 \
 --alpha 8 --downsample-ratio-video 3 --num-nodes 1 --gpus 8 --max-frames-video 1000 --lr 5e-4 
 ```
 
@@ -167,7 +167,7 @@ python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --proj
 
 <details>
   <summary><strong>Want to perform training and inference at the same time?</strong></summary>
-Set `--auto-test True` when starting a training experiment and define the inference arguments as explained in the next section.
+Set --auto-test True when starting a training experiment and define the inference arguments as explained in the next section.
 
 </details>
 
@@ -177,13 +177,14 @@ To test a trained model, either you set `--auto-test True` when starting a train
 
 <details open>
   <summary><strong>Inference Arguments</strong></summary>
+    
 - `max-dec-tokens`: Maximum number of tokens that can be generated by the LLM. Default: `32`.
 - `num-beams`: Number of beams for beam search decoding. Default: `15`.
 - `decode-snr-target`: Level of signal-to-noise ratio (SNR). Default: `999999` (i.e., clean setting).
 
 </details>
 
-If you want to run an inference experiment, you need to define the argument `--pretrained-model-path` and set it to the path to the pre-trained ckpt. Furthermore, you need to specify the same arguments used for the training. Below two examples that use the pre-trained ckpts from the model zoo. 
+If you want to run an inference experiment, you need to define the argument `--pretrained-model-path` and set it to the path to the pre-trained ckpt. Furthermore, you need to specify the same arguments used for the training. Below two examples that test the pre-trained ckpts from the model zoo. 
 
 **Example 1.**
 
@@ -203,7 +204,7 @@ We run the inference for the AVSR pre-trained ckpt in the model zoo. The command
 ```Shell
 python eval_LLM.py --exp-name AVSR_inference --modality audiovisual --project-wandb wandb_project_name \
 --pretrained-model-path path_to_avsr_ckpt --root-dir path_to_root_dir --llm-model meta-llama/Meta-Llama-3.1-8B \
---audio-encoder-name openai/whisper-medium.en --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --unfrozen_modules peft_llm \
+--pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --unfrozen_modules peft_llm \
 --add_PETF_LLM lora --reduction_lora 64 --alpha 8 --downsample-ratio-video 2 --downsample-ratio-audio 4 \
 --max-dec-tokens 32 --num-beams 15
 ```
@@ -236,6 +237,6 @@ If you find this project useful for your research or applications, please kindly
 
 ```
 
-## Contact
+## Contact ✉️
 
 You can reach out to me here: `umbertocappellazzo@gmail.com`. 
