@@ -69,7 +69,7 @@ The label files in `[LRS3]/[labels]` undergo some processing to make them fit Ll
 ### Preliminaries 
 Before starting the training process, make sure you **1)** have a wandb account to track your experiments and **2)** have access to the pre-trained LLMs like Llama 3.1-8B (i.e., you need to request access from HF [here](https://huggingface.co/meta-llama/Llama-3.1-8B)). You also have to download the AV-HuBERT Large model pretrained on LRS3 + VoxCeleb2, accessible [here](https://dl.fbaipublicfiles.com/avhubert/model/lrs3_vox/clean-pretrain/large_vox_iter5.pt).
 
-To set up the desired experiment to run, we have several main arguments to define, listed below (all arguments can be inspected in the `train_LLM.py` script):
+To set up the desired experiment to run, we have several main arguments to define, listed below (all arguments can be inspected in the `train.py` script):
 <details open>
   <summary><strong>Main Arguments</strong></summary>
     
@@ -111,7 +111,7 @@ There are **additional arguments** to define, which are mainly modality-specific
 The command below trains Llama-AVSR using `Whisper Medium` as audio encoder, the LLM is `Llama 3.1-8B` (finetuned using LoRA). We reduce the audio tokens by a factor `3`. We use `8` GPUs from a single node. 
 
 ```Shell
-python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
+python train.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
 --exp-name ASR_ex1 --modality audio --llm-model meta-llama/Meta-Llama-3.1-8B --audio-encoder-name openai/whisper-medium.en \
 --add_PETF_LLM lora --unfrozen_modules peft_llm --reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --num-nodes 1 --gpus 8 \
 --max-frames-audio 1000 --lr 1e-3 
@@ -122,7 +122,7 @@ python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --proj
 The code to train Llama-AVSR with the same setup as above but with `AV-HuBERT Large` as audio encoder (i.e., 8th row of Table 1 in our paper) is slightly different. The command to run is as follows:
 
 ```Shell
-python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
+python train.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
 --exp-name ASR_exp2 --modality audio --llm-model meta-llama/Meta-Llama-3.1-8B --pretrain-avhubert-enc-audio-path path_to_avhubert_ckpt \
 --audio-encoder-name av-hubert --add_PETF_LLM lora --unfrozen_modules peft_llm --reduction_lora 64 --alpha 8 \
 --downsample-ratio-audio 3 --num-nodes 1 --gpus 8 --max-frames-audio 1000 --lr 1e-3
@@ -133,7 +133,7 @@ python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --proj
 For `VSR`, we use `AV-HuBERT Large` (+ LoRA), the LLM is `Llama-2-7B` (+ LoRA). We apply a compression rate of `3`. 
 
 ```Shell
-python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
+python train.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
 --exp-name VSR_exp --modality audio --llm-model meta-llama/Llama-2-7b-hf --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt \
 --use-lora-avhubert True --add_PETF_LLM lora --unfrozen_modules peft_llm lora_avhubert --reduction_lora 64 \
 --alpha 8 --downsample-ratio-video 3 --num-nodes 1 --gpus 8 --max-frames-video 1000 --lr 5e-4 
@@ -146,7 +146,7 @@ python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --proj
 For `AVSR`, we use `AV-HuBERT Large` as video encoder and `Whisper Medium` as audio encoder, the LLM is `Llama 3.1-8B` (finetuned using LoRA). We reduce both the audio and video tokens by a factor `3`.
 
 ```Shell
-python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
+python train.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
 --exp-name AVSR_exp1 --modality audiovisual --audio-encoder-name openai/whisper-medium.en \
 --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --llm-model meta-llama/Meta-Llama-3.1-8B --unfrozen_modules peft_llm \
 --add_PETF_LLM lora --reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --downsample-ratio-video 3 \
@@ -158,7 +158,7 @@ python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --proj
 To reproduce the results obtained using AV-HuBERT to process both audio and video tokens (third to last row in Table 1 in our paper), run this command:
 
 ```Shell
-python train_LLM.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
+python train.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
 --exp-name AVSR_exp2 --modality audiovisual_avhubert --single-projector-avhubert False --audio-encoder-name openai/whisper-medium.en \
 --pretrain-avhubert-enc-audiovisual-path path_to_avhubert_ckpt --llm-model meta-llama/Meta-Llama-3.1-8B --unfrozen_modules peft_llm \
 --add_PETF_LLM lora --reduction_lora 64 --alpha 8 --downsample-ratio-audiovisual 2 \
@@ -173,7 +173,7 @@ Set --auto-test True when starting a training experiment and define the inferenc
 
 ## Inference ☄️
 
-To test a trained model, either you set `--auto-test True` when starting a training experiment, so the inference is performed automatically at the end of the traning, or you can run `eval_LLM.py`. In both cases, multiple inference arguments must be specified as follows:
+To test a trained model, either you set `--auto-test True` when starting a training experiment, so the inference is performed automatically at the end of the traning, or you can run `eval.py`. In both cases, multiple inference arguments must be specified as follows:
 
 <details open>
   <summary><strong>Inference Arguments</strong></summary>
@@ -191,7 +191,7 @@ If you want to run an inference experiment, you need to define the argument `--p
 We run the inference for the ASR pre-trained ckpt in the model zoo. The command is as follows:
 
 ```Shell
-python eval_LLM.py --exp-name ASR_inference --modality audio --project-wandb wandb_project_name \
+python eval.py --exp-name ASR_inference --modality audio --project-wandb wandb_project_name \
 --pretrained-model-path path_to_asr_ckpt --root-dir path_to_root_dir --llm-model meta-llama/Meta-Llama-3.1-8B \
 --audio-encoder-name openai/whisper-medium.en --unfrozen_modules peft_llm --add_PETF_LLM lora \
 --reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --max-dec-tokens 32 --num-beams 15
@@ -202,7 +202,7 @@ python eval_LLM.py --exp-name ASR_inference --modality audio --project-wandb wan
 We run the inference for the AVSR pre-trained ckpt in the model zoo. The command is as follows:
 
 ```Shell
-python eval_LLM.py --exp-name AVSR_inference --modality audiovisual --project-wandb wandb_project_name \
+python eval.py --exp-name AVSR_inference --modality audiovisual --project-wandb wandb_project_name \
 --pretrained-model-path path_to_avsr_ckpt --root-dir path_to_root_dir --llm-model meta-llama/Meta-Llama-3.1-8B \
 --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --unfrozen_modules peft_llm \
 --add_PETF_LLM lora --reduction_lora 64 --alpha 8 --downsample-ratio-video 2 --downsample-ratio-audio 4 \
