@@ -213,7 +213,7 @@ python eval.py --exp-name AVSR_inference --modality audiovisual --project-wandb 
 
 We release the best ckpt for each task. 
 
-| Model Ckpt | Training Hours | WER [%] | Params (M) |
+| Model Ckpt | Training Hours | WER [%] | Trainable Par. (M) |
 |-----|:-----:|:-----:|:-----:|
 |['ASR_Whisper-M_Llama3.1-8B_lrs3vox_down3_seed42.pth'](https://drive.google.com/file/d/1LwMKmG4x63M0J8jINRg9DwmEzvADeBWv/view?usp=sharing)|1756|0.728|42|
 |['VSR_AVH-L_Llama3.1-8B_lrs3vox_down3_seed42'](https://drive.google.com/file/d/1GhKo47kBez8Uj_SJF91k43SWtf1CG3w8/view?usp=drive_link)|1756|23.68|48|
