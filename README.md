@@ -238,8 +238,4 @@ If you find this project useful for your research or applications, please kindly
 
 ## Contact
 
-We can reach out to me here:
-
-```
-[Umberto Cappellazzo](umbertocappellazzo[at]gmail.com)
-```
+You can reach out to me here: `umbertocappellazzo@gmail.com`. 
