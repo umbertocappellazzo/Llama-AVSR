@@ -173,7 +173,7 @@ Set --auto-test True when starting a training experiment and define the inferenc
 
 ## Inference ☄️
 
-To test a trained model, either you set `--auto-test True` when starting a training experiment, so the inference is performed automatically at the end of the traning, or you can run `eval.py`. In both cases, multiple inference arguments must be specified as follows:
+To test a trained model, either you set `--auto-test True` when starting a new training experiment, so the inference is performed automatically at the end of the traning, or you can run `eval.py`. In both cases, a handful of inference arguments must be specified as follows:
 
 <details open>
   <summary><strong>Inference Arguments</strong></summary>
