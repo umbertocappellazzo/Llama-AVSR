@@ -29,7 +29,7 @@ Install necessary dependencies:
 ```
 
 <details>
-  <summary><strong>Issues with opencv-python?</strong></summary>
+  <summary><strong>Issues with opencv-python package?</strong></summary>
 If you encounter issues with opencv-python (e.g., ImportError: libGL.so.1: cannot open shared object file: No such file or directory), pip uninstall opencv-python and pip install opencv-python-headless. This trick solves the issue.
 
 </details>
