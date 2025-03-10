@@ -56,7 +56,7 @@ LRS3
 
 ### 3) Label Files Download
 
-The label files in `[LRS3]/[labels]` undergo some processing to make them fit Llama-AVSR. For example, we lowercase the transcription and discard samples whose length is higher than a specific threshold to avoid training instability and peak GPU memory usage. Based on the desired training setting, the processed labels can be accessed below. Once downloaded, they must be moved to [LRS3]/[labels]` subfolder. 
+The label files in `[LRS3]/[labels]` undergo some processing to make them fit Llama-AVSR. For example, we lowercase the transcription and discard samples whose length is higher than a specific threshold to avoid training instability and peak GPU memory usage. Based on the desired training setting, the processed labels can be accessed below. Once downloaded, they must be moved to `[LRS3]/[labels]` subfolder. 
 
 | Label Files | Dataset(s) | Hours |
 |-----|:-----:|:-----:|
