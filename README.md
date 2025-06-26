@@ -221,6 +221,11 @@ We release the best ckpt for each task.
 
 **Note**: due to the LLM inference parameters (e.g., `"temperature": 0.6`), the results you obtain can slightly differ from inference to inference. For instance, for the ASR ckpt you can obtain a WER of `0.728` or `0.718`.
 
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=umbertocappellazzo/Llama-AVSR&type=Date)](https://www.star-history.com/#umbertocappellazzo/Llama-AVSR&Date)
+
 ## Citation 📝
 
 If you find this project useful for your research or applications, please kindly cite our work:
