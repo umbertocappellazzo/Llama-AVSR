@@ -24,7 +24,10 @@ Install necessary dependencies:
 
 ```bash
    pip install -r requirements.txt
-   cd av_hubert/fairseq
+   cd av_hubert
+   git submodule init
+   git submodule update
+   cd fairseq
    pip install --editable ./
 ```
 
