@@ -26,11 +26,44 @@ def compute_word_level_distance(seq1, seq2):
     seq1, seq2 = seq1.lower().split(), seq2.lower().split()
     return torchaudio.functional.edit_distance(seq1, seq2)
 
+def compute_edits(seq1, seq2):
+    seq1, seq2 = seq1.lower().split(), seq2.lower().split()
+    len_sent2 = len(seq2)
+    dold = [(j, j, 0, 0) for j in range(len_sent2+1)]
+    dnew = [(0,0,0,0) for _ in range(len_sent2 + 1)] # distance, insertions, deletions, substitutions
+
+    num_edits = {'substitutions': 0, 'insertions': 0, 'deletions': 0}
+
+    for i in range(1, len(seq1) + 1):
+        dnew[0] = (i, i, 0, 0)
+        for j in range(1, len_sent2 + 1):
+            if seq1[i - 1] == seq2[j - 1]:
+                dnew[j] = dold[j - 1]
+            else:
+                sub_cost, ins_s, del_s, sub_s = dold[j-1]
+                sub_opt = (sub_cost+1, ins_s, del_s, sub_s+1)
+
+                ins_cost, ins_i, del_i, sub_i = dnew[j-1]
+                ins_opt = (ins_cost+1, ins_i+1, del_i, sub_i)
+                
+                del_cost, ins_d, del_d, sub_d = dold[j]
+                del_opt = (del_cost+1, ins_d, del_d+1, sub_d)
+                
+                dnew[j] = min(sub_opt, ins_opt, del_opt, key=lambda x: x[0])
+
+	
+        dold, dnew = dnew, dold
+
+        total_cost, ins, dels, subs = dold[-1]
+    
+    return {"total_cost": total_cost, "insertions": ins, "deletions": dels, "substitutions": subs}
+
 class ModelModule_LLM(LightningModule):
     def __init__(self, args):
         super().__init__()
         self.args = args
         self.save_hyperparameters(args)
+        self.edits = {"total_cost": 0, 'substitutions': 0, 'insertions': 0, 'deletions': 0}
         
         if args.use_lora_avhubert:
             assert "lora_avhubert" in args.unfrozen_modules, ("LoRA modules for the AV-HuBERT encoder must be unfrozen!!")
@@ -178,7 +211,15 @@ class ModelModule_LLM(LightningModule):
         print("Generated text: ", generated_text)
         
         self.total_edit_distance += compute_word_level_distance(batch["gold_text"], generated_text)
+
+        edit_updates = compute_edits(batch["gold_text"], generated_text)
+        self.edits = {k: edit_updates[k] + self.edits[k] for k in set(self.edits)}
         self.total_length += len(batch["gold_text"].split())
+        
+        # print("Edits: ", self.edits)
+        # print("Length: ", self.total_length)
+        # print("Edit distance: ", self.total_edit_distance)
+
         return
     
     def on_test_epoch_start(self):
@@ -187,3 +228,7 @@ class ModelModule_LLM(LightningModule):
         
     def on_test_epoch_end(self):
         self.log("wer", self.total_edit_distance / self.total_length)
+        self.log("word substitution rate", self.edits['substitutions'] / self.total_length)
+        self.log("word insertion rate", self.edits['insertions'] / self.total_length)
+        self.log("word deletion rate", self.edits['deletions'] / self.total_length)
+        # self.log("total length", self.total_length)

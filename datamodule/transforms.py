@@ -12,10 +12,9 @@ import torch
 import torchaudio
 import torchvision
 
+from .add_distortion_to_video import distortion_vid
 
-NOISE_FILENAME = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)), "babble_noise.wav"
-)
+NOISE_FILENAME = os.path.join(os.path.dirname(os.path.abspath(__file__)), "babble_noise.wav")
 
 SP_MODEL_PATH = os.path.join(
     os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
@@ -71,9 +70,12 @@ class AddNoise(torch.nn.Module):
         snr_target=None,
     ):
         super().__init__()
-        self.snr_levels = [snr_target] if snr_target else [-5, 0, 5, 10, 15, 20, 999999]
+        self.snr_levels = [snr_target] # if snr_target else [-5, 0, 5, 10, 15, 20, 999999]
         self.noise, sample_rate = torchaudio.load(noise_filename)
         assert sample_rate == 16000
+        self.noise_base = os.path.basename(noise_filename)
+        self.counter = False
+        print("AddNoise module: ",noise_filename)
 
     def forward(self, speech):
         # speech: T x 1
@@ -83,11 +85,37 @@ class AddNoise(torch.nn.Module):
         noise_segment = self.noise[:, start_idx : start_idx + speech.shape[1]]
         snr_level = torch.tensor([random.choice(self.snr_levels)])
         noisy_speech = torchaudio.functional.add_noise(speech, noise_segment, snr_level)
+        if self.counter == False:
+                torchaudio.save(uri="/lp625/datasets/noise_results/"+str(self.snr_levels[0])+"_"+self.noise_base, src=noisy_speech, sample_rate=16000)
+                self.counter = True
         return noisy_speech.t()
+
+    
+class CorruptVideo(torch.nn.Module):
+    def __init__(
+        self,
+        type=None,
+        level='0',
+        save_output_path=None
+    ):
+        super().__init__()
+        self.type=type
+        self.level=level
+        self.save_output_path = save_output_path
+        self.saved = False
+        
+    def forward(self, input_tensor, input_filepath):
+        # vid_in is (T x C x H x W)
+        if not self.saved and self.save_output_path is not None:
+                self.saved=True
+                return distortion_vid(vid_in_tensor=input_tensor, vid_in_path=input_filepath, vid_out_path=self.save_output_path, dist_type=self.type, dist_level=self.level)
+        else:
+                self.saved=True
+                return distortion_vid(vid_in_tensor=input_tensor, vid_in_path=input_filepath, vid_out_path=None, dist_type=self.type, dist_level=self.level)
 
 
 class VideoTransform:
-    def __init__(self, subset):
+    def __init__(self, subset, occlusion_type=None, occlusion_level='0', output_file=None):
         if subset == "train":
             self.video_pipeline = torch.nn.Sequential(
                 FunctionalModule(lambda x: x / 255.0),
@@ -97,6 +125,7 @@ class VideoTransform:
                 torchvision.transforms.Normalize(0.421, 0.165),
             )
         elif subset == "val" or subset == "test":
+            self.video_occlusion = CorruptVideo(type=occlusion_type, level=occlusion_level, save_output_path=output_file)
             self.video_pipeline = torch.nn.Sequential(
                 FunctionalModule(lambda x: x / 255.0),
                 torchvision.transforms.CenterCrop(88),
@@ -104,41 +133,40 @@ class VideoTransform:
                 torchvision.transforms.Normalize(0.421, 0.165),
             )
 
-    def __call__(self, sample):
+    def __call__(self, sample_tensor, sample_path):
         # sample: T x C x H x W
         # rtype: T x 1 x H x W
-        return self.video_pipeline(sample)
+        occluded_video = self.video_occlusion(input_tensor=sample_tensor, input_filepath=sample_path)
+        return self.video_pipeline(occluded_video)
 
 
 class AudioTransform:
-    def __init__(self, subset, snr_target=None, is_avhubert_audio=False):
+    def __init__(self, subset, snr_target=None, is_avhubert_audio=False, noise_filename=None):
+        if noise_filename is None:
+                noise_filename=NOISE_FILENAME # defaults to babble noise if no file is provided
         if is_avhubert_audio:
             if subset == "train":
                 self.audio_pipeline = torch.nn.Sequential(
                     AdaptiveTimeMask(6400, 16000),
-                    AddNoise(),
+                    AddNoise(noise_filename=noise_filename),
                 )
             elif subset == "val" or subset == "test":
                 self.audio_pipeline = torch.nn.Sequential(
-                    AddNoise(snr_target=snr_target)
-                    if snr_target is not None
-                    else FunctionalModule(lambda x: x),
+                    AddNoise(snr_target=snr_target, noise_filename=noise_filename)
                 )
         else:
 
             if subset == "train":
                 self.audio_pipeline = torch.nn.Sequential(
                     AdaptiveTimeMask(6400, 16000),
-                    AddNoise(),
+                    AddNoise(noise_filename=noise_filename),
                     FunctionalModule(
                         lambda x: torch.nn.functional.layer_norm(x, x.shape, eps=1e-8)
                     ),
                 )
             elif subset == "val" or subset == "test":
                 self.audio_pipeline = torch.nn.Sequential(
-                    AddNoise(snr_target=snr_target)
-                    if snr_target is not None
-                    else FunctionalModule(lambda x: x),
+                    AddNoise(snr_target=snr_target, noise_filename=noise_filename),
                     FunctionalModule(
                         lambda x: torch.nn.functional.layer_norm(x, x.shape, eps=1e-8)
                     ),
