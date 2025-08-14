@@ -211,7 +211,14 @@ def parse_args():
 	default=None,
         help="Filepath (.wav) to noise file for injection"
     )
-    
+
+    parser.add_argument(
+        "--noise-output",
+        type=str,
+        default=None,
+        help='Filepath to optionally save first result of noise injection as .wav'
+    )
+
     parser.add_argument(
         "--occlusion-type",
         type=str,
@@ -225,11 +232,19 @@ def parse_args():
         default='0',
         help='Optional video corruption levels: 0 | 1 | 2 | 3 | 4 | 5 | random'
     )
+
     parser.add_argument(
         '--occlusion-output',
         type=str,
         default=None,
         help='Filepath to optionally save first result of occlusion as .mp4 to visualize results'
+    )
+
+    parser.add_argument(
+        '--include-wer-breakdown',
+        type=bool,
+        default=False,
+        help='Flag to include the word substitution, insertion, and deletion rates in addition to overall error rate'
     )
 
     return parser.parse_args()
