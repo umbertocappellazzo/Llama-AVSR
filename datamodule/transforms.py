@@ -112,7 +112,7 @@ class CorruptVideo(torch.nn.Module):
                 return distortion_vid(vid_in_tensor=input_tensor, vid_in_path=input_filepath, vid_out_path=self.save_output_path, dist_type=self.type, dist_level=self.level)
         else:
                 self.saved=True
-                return distortion_vid(vid_in_tensor=input_tensor, vid_in_path=input_filepath, vid_out_path=None, dist_type=self.type, dist_level=self.level)
+                return distortion_vid(vid_in_tensor=input_tensor, vid_in_path=None, vid_out_path=None, dist_type=self.type, dist_level=self.level)
 
 
 class VideoTransform:
@@ -126,10 +126,10 @@ class VideoTransform:
                 torchvision.transforms.Normalize(0.421, 0.165),
             )
         elif subset == "val" or subset == "test":
-            if occlusion_type is not None and occlusion_level != '0':
-                self.video_occlusion = CorruptVideo(type=occlusion_type, level=occlusion_level, save_output_path=output_file)
-            else:
+            if occlusion_type is None or occlusion_level == '0':
                 self.video_occlusion = lambda x, y: x
+            else:
+                self.video_occlusion = CorruptVideo(type=occlusion_type, level=occlusion_level, save_output_path=output_file)
             self.video_pipeline = torch.nn.Sequential(
                 FunctionalModule(lambda x: x / 255.0),
                 torchvision.transforms.CenterCrop(88),

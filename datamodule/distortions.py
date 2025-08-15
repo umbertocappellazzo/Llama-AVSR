@@ -47,9 +47,9 @@ def color_contrast(img, param):
 
 
 def block_wise(img, param):
-    width = 8
+    width = 3
     block = np.ones((width, width, 3)).astype(int) * 128
-    param = min(img.shape[0], img.shape[1]) // 256 * param
+    param = min(img.shape[0], img.shape[1]) // 96 * param
     for i in range(param):
         r_w = random.randint(0, img.shape[1] - 1 - width)
         r_h = random.randint(0, img.shape[0] - 1 - width)

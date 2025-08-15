@@ -66,8 +66,7 @@ class ModelModule_LLM(LightningModule):
         self.args = args
         self.save_hyperparameters(args)
         self.include_wer_breakdown = args.include_wer_breakdown
-        self.edits = {"total_cost": 0, 'substitutions': 0, 'insertions': 0, 'deletions': 0} if self.include_wer_breakdown else {"total_cost": 0}
-        
+     
         if args.use_lora_avhubert:
             assert "lora_avhubert" in args.unfrozen_modules, ("LoRA modules for the AV-HuBERT encoder must be unfrozen!!")
         
@@ -221,7 +220,8 @@ class ModelModule_LLM(LightningModule):
     
     def on_test_epoch_start(self):
         self.total_length = 0
-        self.total_edit_distance = 0
+        self.edits = {"total_cost": 0, 'substitutions': 0, 'insertions': 0, 'deletions': 0} if self.include_wer_breakdown else {"total_cost": 0}
+
         
     def on_test_epoch_end(self):
         self.log("wer", self.edits['total_cost'] / self.total_length)
