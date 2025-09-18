@@ -11,7 +11,7 @@ from argparse import ArgumentParser
 
 from datamodule.data_module_LLM import DataModule_LLM
 from pytorch_lightning import Trainer
-from lightning import ModelModule_LLM
+from models.lightning import ModelModule_LLM
 from pytorch_lightning.loggers import WandbLogger
 
 def get_trainer(args):
@@ -21,6 +21,9 @@ def get_trainer(args):
                    accelerator="gpu",
                    logger=WandbLogger(name=args.exp_name, project=args.project_wandb)
                    )
+
+def list_of_ints(arg):
+    return list(map(int, arg.split(',')))
  
 def parse_args():
     parser = ArgumentParser()
@@ -192,17 +195,58 @@ def parse_args():
     )
     parser.add_argument(
         "--decode-snr-target",
-        type=float,
+        type=int,
         default= 999999,  
-        help="Level of signal-to-noise ratio (SNR)",
-        choices= [999999,5,2,0,-2,-5]
+        help="Level of signal-to-noise ratio (SNR), some combination of 999999, 5, 2, 0, -2, 5",
     )
     parser.add_argument(
         "--debug",
         action="store_true",
         help="Flag to use debug level for logging",
     )
+
+    parser.add_argument(
+	"--noise-filename",
+	type=str,
+	default=None,
+        help="Filepath (.wav) to noise file for injection"
+    )
+
+    parser.add_argument(
+        "--noise-output",
+        type=str,
+        default=None,
+        help='Filepath to optionally save first result of noise injection as .wav'
+    )
+
+    parser.add_argument(
+        "--occlusion-type",
+        type=str,
+        default=None,
+        help='Optional video corruption types: None | CS | CC | BW | GNC | GB | JPEG | random'
+    )
     
+    parser.add_argument(
+        '--occlusion-level',
+        type=str,
+        default='0',
+        help='Optional video corruption levels: 0 | 1 | 2 | 3 | 4 | 5 | random'
+    )
+
+    parser.add_argument(
+        '--occlusion-output',
+        type=str,
+        default=None,
+        help='Filepath to optionally save first result of occlusion as .mp4 to visualize results'
+    )
+
+    parser.add_argument(
+        '--include-wer-breakdown',
+        type=bool,
+        default=False,
+        help='Flag to include the word substitution, insertion, and deletion rates in addition to overall error rate'
+    )
+
     return parser.parse_args()
 
 

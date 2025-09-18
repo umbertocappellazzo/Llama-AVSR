@@ -104,7 +104,7 @@ class AVDataset_LLM(torch.utils.data.Dataset):
         
         if self.modality == "video":
             video = load_video(path)
-            video = self.video_transform(video)
+            video = self.video_transform(sample_path=path, sample_tensor=video)
             
             if self.downsample_video:
                 video = video[: video.size(0) // self.downsample_video * self.downsample_video]
@@ -128,7 +128,7 @@ class AVDataset_LLM(torch.utils.data.Dataset):
             audio = load_audio(path)
             audio = cut_or_pad(audio, len(video) * self.rate_ratio)
             
-            video = self.video_transform(video)
+            video = self.video_transform(sample_tensor=video, sample_path=path)
             audio = self.audio_transform(audio)
             
             if self.downsample_video:
@@ -142,7 +142,7 @@ class AVDataset_LLM(torch.utils.data.Dataset):
             audio = load_audio(path)
             audio = cut_or_pad(audio, len(video) * self.rate_ratio)
             
-            video = self.video_transform(video)
+            video = self.video_transform(sample_tensor=video, sample_path=path)
             
             if not self.single_projector_avhubert:
                 video = video[: video.size(0) // self.downsample_video * self.downsample_video]
