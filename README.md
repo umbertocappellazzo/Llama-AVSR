@@ -66,6 +66,7 @@ The label files in `[LRS3]/[labels]` undergo some processing to make them fit Ll
 |['lrs3_30h_train_transcript_lengths_seg16s_LLM_lowercase_12.csv'](https://drive.google.com/file/d/11t5BDnl05p3A5kR1rIaSosW2vXK915BN/view?usp=drive_link)|"Low-Resource" LRS3 ("trainval")|30|
 |['lrs3_train_transcript_lengths_seg16s_LLM_lowercase_25.csv'](https://drive.google.com/file/d/1ytq7-fuC6R7G3r2MQPAWYXkJac9Ja3UB/view?usp=drive_link)|LRS3|433|
 |['lrs3vox2en_train_transcript_lengths_seg16s_LLM_lowercase_25.csv'](https://drive.google.com/file/d/123Y7uUfppghmmJUhwum7fKGHYjbHJXsC/view?usp=drive_link)|LRS3 + VoxCeleb2|1756|
+| ['lrs3_test_transcript_lengths_seg24s_LLM_lowercase.csv'](https://drive.google.com/file/d/17ob4j1AQZo7NOqr1hP6_z5fZ1ldmGVWA/view?usp=sharing)|LRS3 test file|/|
 
 ## Training Stage 🏋️
 
@@ -197,7 +198,7 @@ We run the inference for the ASR pre-trained ckpt in the model zoo. The command 
 python eval.py --exp-name ASR_inference --modality audio --project-wandb wandb_project_name \
 --pretrained-model-path path_to_asr_ckpt --root-dir path_to_root_dir --llm-model meta-llama/Meta-Llama-3.1-8B \
 --audio-encoder-name openai/whisper-medium.en --unfrozen_modules peft_llm --add_PETF_LLM lora \
---reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --max-dec-tokens 32 --num-beams 15
+--reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --max-dec-tokens 32 --num-beams 15 --test-file lrs3_test_transcript_lengths_seg24s_LLM_lowercase.csv
 ```
 
 **Example 2.**
@@ -209,7 +210,7 @@ python eval.py --exp-name AVSR_inference --modality audiovisual --project-wandb 
 --pretrained-model-path path_to_avsr_ckpt --root-dir path_to_root_dir --llm-model meta-llama/Meta-Llama-3.1-8B \
 --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --unfrozen_modules peft_llm \
 --add_PETF_LLM lora --reduction_lora 64 --alpha 8 --downsample-ratio-video 2 --downsample-ratio-audio 4 \
---max-dec-tokens 32 --num-beams 15
+--max-dec-tokens 32 --num-beams 15 --test-file lrs3_test_transcript_lengths_seg24s_LLM_lowercase.csv
 ```
 
 ## Model Zoo 🤩
