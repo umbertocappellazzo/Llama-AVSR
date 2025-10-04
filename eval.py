@@ -57,7 +57,7 @@ def parse_args():
     )
     parser.add_argument(
         "--test-file",
-        default="lrs3_test_transcript_lengths_seg16s_LLM_lowercase.csv",
+        default="lrs3_test_transcript_lengths_seg24s_LLM_lowercase.csv",
         type=str,
         help="Filename of testing label list.",
     )
