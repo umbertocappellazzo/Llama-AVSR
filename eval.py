@@ -9,7 +9,7 @@ Created on Fri Mar 22 19:10:25 2024
 import logging
 from argparse import ArgumentParser
 
-from datamodule.data_module_LLM import DataModule_LLM
+from datamodule.data_module import DataModule_LLM
 from pytorch_lightning import Trainer
 from lightning import ModelModule_LLM
 from pytorch_lightning.loggers import WandbLogger
