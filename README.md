@@ -152,8 +152,8 @@ For `AVSR`, we use `AV-HuBERT Large` as video encoder and `Whisper Medium` as au
 ```Shell
 python train.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
 --exp-name AVSR_exp1 --modality audiovisual --audio-encoder-name openai/whisper-medium.en \
---pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --llm-model meta-llama/Meta-Llama-3.1-8B --unfrozen_modules peft_llm \
---add_PETF_LLM lora --reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --downsample-ratio-video 3 \
+--pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --audio-encoder-name openai/whisper-medium.en --llm-model meta-llama/Meta-Llama-3.1-8B \
+--unfrozen_modules peft_llm --add_PETF_LLM lora --reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --downsample-ratio-video 3 \
 --num-nodes 1 --gpus 8 --max-frames-audiovisual 1000 --lr 1e-3
 ```
 
