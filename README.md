@@ -138,7 +138,7 @@ For `VSR`, we use `AV-HuBERT Large` (+ LoRA), the LLM is `Llama-2-7B` (+ LoRA). 
 
 ```Shell
 python train.py --exp-dir path_to_exp_dir --root-dir path_to_root_dir --project-wandb wandb_project_name \
---exp-name VSR_exp --modality audio --llm-model meta-llama/Llama-2-7b-hf --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt \
+--exp-name VSR_exp --modality video --llm-model meta-llama/Llama-2-7b-hf --pretrain-avhubert-enc-video-path path_to_avhubert_ckpt \
 --use-lora-avhubert True --add_PETF_LLM lora --unfrozen_modules peft_llm lora_avhubert --reduction_lora 64 \
 --alpha 8 --downsample-ratio-video 3 --num-nodes 1 --gpus 8 --max-frames-video 1000 --lr 5e-4 
 ```
