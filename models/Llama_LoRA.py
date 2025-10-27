@@ -81,22 +81,6 @@ class LlamaSdpaAttention_lora(LlamaSdpaAttention):
         position_embeddings: Optional[Tuple[torch.Tensor, torch.Tensor]] = None,  # will become mandatory in v4.45
         **kwargs,
     ) -> Tuple[torch.Tensor, Optional[torch.Tensor], Optional[Tuple[torch.Tensor]]]:
-        if output_attentions:
-            # TODO: Improve this warning with e.g. `model.config.attn_implementation = "manual"` once this is implemented.
-            logger.warning_once(
-                "LlamaModel is using LlamaSdpaAttention, but `torch.nn.functional.scaled_dot_product_attention` does not support `output_attentions=True`. Falling back to the manual attention implementation, "
-                'but specifying the manual implementation will be required from Transformers version v5.0.0 onwards. This warning can be removed using the argument `attn_implementation="eager"` when loading the model.'
-            )
-            return super().forward(
-                hidden_states=hidden_states,
-                attention_mask=attention_mask,
-                position_ids=position_ids,
-                past_key_value=past_key_value,
-                output_attentions=output_attentions,
-                use_cache=use_cache,
-                cache_position=cache_position,
-                position_embeddings=position_embeddings,
-            )
 
         bsz, q_len, _ = hidden_states.size()
 
@@ -150,7 +134,7 @@ class LlamaSdpaAttention_lora(LlamaSdpaAttention):
 
         is_causal = True if causal_mask is None and q_len > 1 else False
 
-        attn_output = torch.nn.functional.scaled_dot_product_attention(
+        attn_output, attn = scaled_dot_product_attention(
             query_states,
             key_states,
             value_states,
@@ -159,6 +143,9 @@ class LlamaSdpaAttention_lora(LlamaSdpaAttention):
             is_causal=is_causal,
         )
 
+        if not output_attentions:
+            attn = None
+
         attn_output = attn_output.transpose(1, 2).contiguous()
         attn_output = attn_output.view(bsz, q_len, -1)
         
@@ -166,7 +153,7 @@ class LlamaSdpaAttention_lora(LlamaSdpaAttention):
         
         attn_output = self.o_proj(attn_output) #+ O_lora*self.scaling
 
-        return attn_output, None, past_key_value
+        return attn_output, attn, past_key_value
 
 class LlamaForCausalLM_lora(LlamaForCausalLM):
     _tied_weights_keys = ["lm_head.weight"]
@@ -190,3 +177,32 @@ class LlamaDecoderLayer_lora(LlamaDecoderLayer):
         self.lora_config= lora_config
         
         self.self_attn = LlamaSdpaAttention_lora(config=config, layer_idx=layer_idx, lora_config=lora_config)
+
+"""
+Modified and Taken from: https://docs.pytorch.org/docs/stable/generated/torch.nn.functional.scaled_dot_product_attention.html
+"""
+def scaled_dot_product_attention(query, key, value, attn_mask=None, dropout_p=0.0,
+        is_causal=False, scale=None, enable_gqa=False) -> torch.Tensor:
+    L, S = query.size(-2), key.size(-2)
+    scale_factor = 1 / math.sqrt(query.size(-1)) if scale is None else scale
+    attn_bias = torch.zeros(L, S, dtype=query.dtype, device=query.device)
+    if is_causal:
+        assert attn_mask is None
+        temp_mask = torch.ones(L, S, dtype=torch.bool).tril(diagonal=0)
+        attn_bias.masked_fill_(temp_mask.logical_not(), float("-inf"))
+
+    if attn_mask is not None:
+        if attn_mask.dtype == torch.bool:
+            attn_bias.masked_fill_(attn_mask.logical_not(), float("-inf"))
+        else:
+            attn_bias = attn_mask + attn_bias
+
+    if enable_gqa:
+        key = key.repeat_interleave(query.size(-3)//key.size(-3), -3)
+        value = value.repeat_interleave(query.size(-3)//value.size(-3), -3)
+
+    attn_weight = query @ key.transpose(-2, -1) * scale_factor
+    attn_weight += attn_bias
+    attn_weight = torch.softmax(attn_weight, dim=-1)
+    attn_weight = torch.dropout(attn_weight, dropout_p, train=True)
+    return attn_weight @ value, attn_weight
