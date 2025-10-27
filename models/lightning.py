@@ -99,7 +99,10 @@ class ModelModule_LLM(LightningModule):
                                    max_dec_tokens = args.max_dec_tokens, 
                                    num_beams = args.num_beams, 
                                    PETF_LLM_name = args.add_PETF_LLM, 
-                                   peft_config_llm= lora_config_llm, 
+                                   peft_config_llm = lora_config_llm,
+                                   add_sink_loss = args.add_sink_loss,
+                                   sink_loss_factor = args.sink_loss_factor,
+                                   remove_layernorm_from_projector = args.no_layernorm_projector
                                    )
             
             n_parameters_learn = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
@@ -124,7 +127,10 @@ class ModelModule_LLM(LightningModule):
                                    audio_encoder_name = args.audio_encoder_name,
                                    unfrozen_modules= args.unfrozen_modules,
                                    max_dec_tokens = args.max_dec_tokens,
-                                   num_beams = args.num_beams, 
+                                   num_beams = args.num_beams,
+                                   add_sink_loss = args.add_sink_loss,
+                                   sink_loss_factor = args.sink_loss_factor,
+                                   remove_layernorm_from_projector = args.no_layernorm_projector
                                    )
             
             n_parameters_learn = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
@@ -147,11 +153,16 @@ class ModelModule_LLM(LightningModule):
         return [optimizer], [scheduler]
         
     def training_step(self, batch, batch_idx):
-        train_loss = self.model(batch, is_trainval = True)[0]
+        if self.args.add_sink_loss:
+            train_loss, decor_loss = self.model(batch, is_trainval = True)
+        else:
+            train_loss = self.model(batch, is_trainval = True)[0]
         
         batch_size = batch["tokens"].shape[0]
 
         self.log("loss", train_loss, on_step=True, on_epoch=True, batch_size=batch_size)
+        if self.args.add_sink_loss:
+            self.log("decor_loss", decor_loss, on_step=True, on_epoch=True, batch_size=batch_size)
         
         batch_sizes = self.all_gather(batch_size)
         
@@ -161,11 +172,16 @@ class ModelModule_LLM(LightningModule):
             
         
     def validation_step(self, batch, batch_idx):
-        val_loss = self.model(batch, is_trainval = True)[0]
+        if self.args.add_sink_loss:
+            val_loss, val_decor_loss = self.model(batch, is_trainval = True)
+        else:
+            val_loss = self.model(batch, is_trainval = True)[0]
         
         batch_size = batch["tokens"].shape[0]
         
         self.log("loss_val", val_loss, batch_size=batch_size, sync_dist=True)
+        if self.args.add_sink_loss:
+            self.log("val_decor_loss", val_decor_loss, on_step=True, on_epoch=True, batch_size=batch_size)
         
         return val_loss
             
