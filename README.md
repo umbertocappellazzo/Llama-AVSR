@@ -208,7 +208,7 @@ We run the inference for the AVSR pre-trained ckpt in the model zoo. The command
 ```Shell
 python eval.py --exp-name AVSR_inference --modality audiovisual --project-wandb wandb_project_name \
 --pretrained-model-path path_to_avsr_ckpt --root-dir path_to_root_dir --llm-model meta-llama/Meta-Llama-3.1-8B \
---pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --unfrozen_modules peft_llm \
+--pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --unfrozen_modules peft_llm --audio-encoder-name openai/whisper-medium.en \
 --add_PETF_LLM lora --reduction_lora 64 --alpha 8 --downsample-ratio-video 2 --downsample-ratio-audio 4 \
 --max-dec-tokens 32 --num-beams 15 --test-file lrs3_test_transcript_lengths_seg24s_LLM_lowercase.csv
 ```
