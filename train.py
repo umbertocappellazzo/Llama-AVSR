@@ -351,6 +351,24 @@ def parse_args():
         default= True,
         help="Flag to use debug level for logging",
     )
+    parser.add_argument(
+        "--add-sink-loss",
+        type=bool,
+        default=False,
+        help="Add decorrelation loss to avoid intermediate attention sinks",
+    )
+    parser.add_argument(
+        "--sink-loss-factor",
+        type=float,
+        default=10000,
+        help="Weight of sink loss in reference to cross entropy loss. Note: add-sink-loss must be True",
+    )
+    parser.add_argument(
+        "--no-layernorm-projector",
+        default=False,
+        type=bool,
+        help="Removes LayerNorm from the audio and video projectors",
+    )
     
     return parser.parse_args()
 

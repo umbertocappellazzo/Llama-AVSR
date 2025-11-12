@@ -9,6 +9,7 @@ import sys
 sys.path.append("..")
 import torch
 from torch import nn
+import torch.nn.functional as F
 
 from .Llama_LoRA import LlamaForCausalLM_lora
 from transformers import WhisperModel, LlamaForCausalLM, AutoFeatureExtractor, WavLMModel
@@ -24,7 +25,8 @@ class AVSR_LLMs(nn.Module):
     def __init__(self, modality, pretrain_avhubert_enc_video, pretrain_avhubert_enc_audio, 
                  pretrain_avhubert_enc_audiovisual, use_lora_avhubert, llm_model, hidden_size, intermediate_size, tokenizer, prompt, pad_id, 
                  downsample_ratio_audio, downsample_ratio_video, downsample_ratio_audiovisual, single_projector_avhubert, audio_encoder_name, 
-                 unfrozen_modules, max_dec_tokens, num_beams, PETF_LLM_name = None, peft_config_llm = None,
+                 unfrozen_modules, max_dec_tokens, num_beams, PETF_LLM_name = None, peft_config_llm = None, add_sink_loss = False, sink_loss_factor = 10000,
+                 remove_layernorm_from_projector = False
                  ):
         
         super().__init__()
@@ -43,6 +45,9 @@ class AVSR_LLMs(nn.Module):
         self.peft_config_llm = peft_config_llm
         self.PETF_LLM_name = PETF_LLM_name
         self.single_projector_avhubert = single_projector_avhubert
+        self.add_sink_loss = add_sink_loss
+        self.sink_loss_factor = sink_loss_factor
+        self.remove_layernorm_from_projector = remove_layernorm_from_projector
             
         if modality == "audio" or modality == "audiovisual":
             
@@ -70,7 +75,10 @@ class AVSR_LLMs(nn.Module):
                 audio_dim =self.audio_encoder.config.hidden_size
                 
             # The projector is a two-layer MLP.
-            self.audio_proj = nn.Sequential(nn.Linear(audio_dim*self.downsample_ratio_audio, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+            if self.remove_layernorm_from_projector:
+                self.audio_proj = nn.Sequential(nn.Linear(audio_dim*self.downsample_ratio_audio, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+            else:
+                self.audio_proj = nn.Sequential(nn.Linear(audio_dim*self.downsample_ratio_audio, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
             
         if modality == "video" or modality == "audiovisual":
             assert pretrain_avhubert_enc_video is not None, ("The AV-HuBERT pre-trained model must be defined!")
@@ -107,8 +115,10 @@ class AVSR_LLMs(nn.Module):
             self.video_encoder.requires_grad_(False)
             video_dim = 1024
              
-            
-            self.video_proj = nn.Sequential(nn.Linear(video_dim*self.downsample_ratio_video, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+            if self.remove_layernorm_from_projector:
+                self.video_proj = nn.Sequential(nn.Linear(video_dim*self.downsample_ratio_video, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+            else:
+                self.video_proj = nn.Sequential(nn.Linear(video_dim*self.downsample_ratio_video, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
             
         
         if modality == "audiovisual_avhubert":
@@ -143,10 +153,17 @@ class AVSR_LLMs(nn.Module):
              audiovisual_dim = 1024     
              
              if self.single_projector_avhubert:
-                 self.audiovisual_proj = nn.Sequential(nn.Linear(audiovisual_dim*self.downsample_ratio_audiovisual, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+                 if self.remove_layernorm_from_projector:
+                    self.audiovisual_proj = nn.Sequential(nn.Linear(audiovisual_dim*self.downsample_ratio_audiovisual, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+                 else:
+                    self.audiovisual_proj = nn.Sequential(nn.Linear(audiovisual_dim*self.downsample_ratio_audiovisual, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
              else:
-                 self.audio_proj = nn.Sequential(nn.Linear(audiovisual_dim*self.downsample_ratio_audio, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
-                 self.video_proj = nn.Sequential(nn.Linear(audiovisual_dim*self.downsample_ratio_video, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+                 if self.remove_layernorm_from_projector:
+                     self.audio_proj = nn.Sequential(nn.Linear(audiovisual_dim*self.downsample_ratio_audio, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+                     self.video_proj = nn.Sequential(nn.Linear(audiovisual_dim*self.downsample_ratio_video, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+                 else:
+                     self.audio_proj = nn.Sequential(nn.Linear(audiovisual_dim*self.downsample_ratio_audio, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
+                     self.video_proj = nn.Sequential(nn.Linear(audiovisual_dim*self.downsample_ratio_video, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
                      
         
         if self.PETF_LLM_name is None:
@@ -203,12 +220,31 @@ class AVSR_LLMs(nn.Module):
     
     def forward(self, inputs, is_trainval= True):
         
-        text_embeddings, labels = self.prepare_inputs(inputs, is_trainval)
+        text_embeddings, labels, non_output_tokens_count = self.prepare_inputs(inputs, is_trainval)
         
         if is_trainval: # Train/eval step: compute the logits and loss. Note that the llm computes itself the loss since we feed labels.
-            outputs = self.llm(inputs_embeds = text_embeddings, labels = labels)
+            outputs = self.llm(inputs_embeds = text_embeddings, labels = labels, output_hidden_states=self.add_sink_loss)
+
+            if not self.add_sink_loss:
+                return outputs
             
-            return outputs
+            hidden_states = outputs.hidden_states
+            decor_losses = []
+
+            for layer_idx in range(1, len(hidden_states) - 1):
+                hidden_state = hidden_states[layer_idx][:, :non_output_tokens_count+1, :]
+                bos_hidden_state = hidden_state[:, 0, :]
+                bos_direction = F.normalize(bos_hidden_state, dim=-1)
+                token_directions = F.normalize(hidden_state, dim=-1)
+                cosine_similarity = torch.einsum("bd,bsd->bs", bos_direction, token_directions)
+                mask = torch.ones_like(cosine_similarity)
+                mask[:, 0] = 0 # eclude bos token similarity with itself
+                loss = ((cosine_similarity ** 2) * mask).sum() / mask.sum()
+                decor_losses.append(loss)
+            
+            decor_loss = torch.stack(decor_losses).mean() * self.sink_loss_factor
+
+            return outputs.loss + decor_loss, decor_loss
         
         else: # Inference step: we decode starting from the audio/video tokens + bos. 
             if self.llm_model == "meta-llama/Meta-Llama-3.1-8B":
@@ -269,7 +305,7 @@ class AVSR_LLMs(nn.Module):
                 else:
                     labels = None
                 
-                return text_embeddings, labels
+                return text_embeddings, labels, ignore_count
             else:
                 audio_features, video_features = self.encode_AVH_audiovisual(inputs["audio"], inputs["video"], self.single_projector_avhubert)
                 
@@ -328,7 +364,7 @@ class AVSR_LLMs(nn.Module):
                 else:
                     labels = None
                 
-                return text_embeddings, labels
+                return text_embeddings, labels, ignore_count
                 
         else:
         
@@ -394,7 +430,7 @@ class AVSR_LLMs(nn.Module):
             else:
                 labels = None
             
-            return text_embeddings, labels
+            return text_embeddings, labels, ignore_count
     
     
     def encode_AVH_audiovisual(self, audios, videos, single_projector_avhubert):
