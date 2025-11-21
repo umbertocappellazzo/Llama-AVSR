@@ -1,12 +1,13 @@
 # Llama-AVSR: an MLLM Designed for Audio-Visual Speech Recognition
 
-This is the official repository for the paper "[**Large Language Models are Strong Audio-Visual Speech
-Recognition Learners**](https://arxiv.org/pdf/2409.12319)", ***U. Cappellazzo***, *M. Kim*, *H. Chen*, *P. Ma*, *S. Petridis*, *D. Falavigna*, *A. Brutti*, *M. Pantic*.
+This is the official repository for the papers "[**Large Language Models are Strong Audio-Visual Speech
+Recognition Learners**](https://arxiv.org/pdf/2409.12319)", *U. Cappellazzo*, *M. Kim*, *H. Chen*, *P. Ma*, *S. Petridis*, *D. Falavigna*, *A. Brutti*, *M. Pantic*, and "[**Mitigating Attention Sinks and Massive Activations in Audio-Visual Speech Recognition with LLMs**](https://arxiv.org/pdf/2510.22603)", *Anand*, *U. Cappellazzo*, *S. Petridis*, *M. Pantic*.
 
 ## 📣 News 📣
+- ```[2025.11]``` We update the **code** of Llama-AVSR and release new **ckpts**, with improvements and analyses of attention sinks and massive activations folllowing our recent [**paper**](https://arxiv.org/pdf/2510.22603) 🔥🔥.
 - ```[2025.03]``` We release **code** and **ckpts** of Llama-AVSR, and the camera-ready version of the [**paper**](https://arxiv.org/abs/2409.12319) 🔥🔥.
 - ```[2024.12]``` Our paper has been accepted for publication at **ICASSP** 2025 🚀🚀.
-- ```[2024.09]``` We release the [**arXiv paper**](https://arxiv.org/abs/2409.12319) 🦙.
+- ```[2024.09]``` We release the [**arXiv paper**](https://arxiv.org/abs/2409.12319) of Llama-AVSR 🦙.
 
 
 ## Llama-AVSR Overwiew 🔍
