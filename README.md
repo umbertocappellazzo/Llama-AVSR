@@ -225,6 +225,26 @@ We release the best ckpt for each task.
 
 **Note**: due to the LLM inference parameters (e.g., `"temperature": 0.6`), the results you obtain can slightly differ from inference to inference. For instance, for the ASR ckpt you can obtain a WER of `0.728` or `0.718`.
 
+## Mitigating Massive Activations and Attention Sinks in Intermediate Tokens
+
+In our paper, [Mitigating Attention Sinks and Massive Activations in Audio-Visual Speech Recognition with LLMs](https://arxiv.org/pdf/2510.22603), we show that massive activations and attention sinks in intermediate tokens arise due to high alignment with the BOS (begin-of-sequence) sink token. To address this, we introduce a decorrelation (sink) loss that minimizes the cosine similarity between the BOS token and the remaining input tokens. This simple modification effectively mitigates attention sinks and massive activations. In addition to stabilizing the internal dynamics, the sink loss also improves word error rate (WER) at high feature downsampling rates, while maintaining stable performance at lower downsampling rates.
+
+We further add a LayerNorm before feature fusion in the LLM to improve the convergence behavior during training. This pre-fusion normalization leads to more stable optimization without degrading recognition performance. To disable the pre-fusion LayerNorm in the projector, set `--no-layernorm-projector True` in the training script. To enable the proposed sink loss during training, set `--add-sink-loss True`.
+
+We release checkpoints for audio-visual speech recognition (ASR) and visual speech recognition (VSR) models trained on LRS2 and LRS3, respectively, at downsampling rates of 32 and 5. These checkpoints highlight the performance improvements obtained after mitigating intermediate attention sinks.
+
+<p align="center">
+  <img src="assets/massive_activation_attention_sink.png" width="100%">
+</p>
+
+### Word Error Rate (WER)
+
+| Model Checkpoint | WER [%] |
+|------------------|:-------:|
+| [VSR_LRS3_avg-pooling_AVH-Large_LoRA_Llama3.2-3B_Vdown5.pth](https://drive.google.com/file/d/1r8RSQ3kP76ylJxrNvtCcRYYI_9rDT_mc/view?usp=sharing) | 44.18 |
+| [VSR_LRS3_avg-pooling_AVH-Large_LoRA_Llama3.2-3B_Vdown5_sink_loss.pth](https://drive.google.com/file/d/1nwmD7eAbvNBDyvhGhbV7XOjIZcBUPr2s/view?usp=sharing) | **34.16** |
+| [ASR_LRS2_avg-pooling_AVH-Large_LoRA_Llama3.2-3B_Adown32.pth](https://drive.google.com/file/d/1LgR6-CerFaH-tNYfsakeLqHda05yuz34/view?usp=sharing) | 13.16 |
+| [ASR_LRS2_avg-pooling_AVH-Large_LoRA_Llama3.2-3B_Adown32_sink_loss.pth](https://drive.google.com/file/d/185nMK_1j_rGtPaPML13CLfPCLdClODDe/view?usp=sharing) | **11.38** |
 
 ## Star History
 
