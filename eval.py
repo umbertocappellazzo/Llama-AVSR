@@ -206,6 +206,12 @@ def parse_args():
         help="Flag to use debug level for logging",
     )
     parser.add_argument(
+        "--add-sink-loss",
+        type=bool,
+        default=False,
+        help="Add decorrelation loss to avoid intermediate attention sinks",
+    )
+    parser.add_argument(
         "--layernorm-projector",
         default=False,
         type=bool,
