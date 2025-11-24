@@ -19,6 +19,9 @@ llm_size = {"TinyLlama/TinyLlama_v1.1": 2048,
             "meta-llama/Llama-2-13b-hf": 5120,
             "meta-llama/Llama-2-7b-hf": 4096,
             "meta-llama/Meta-Llama-3.1-8B": 4096,
+            "meta-llama/Llama-3.2-1B": 2048,
+            "meta-llama/Llama-3.2-3B": 3072,
+            "meta-llama/Meta-Llama-3-8B": 4096
             }
 
 
@@ -74,7 +77,7 @@ class ModelModule_LLM(LightningModule):
         print(f"The prompt used for the {args.modality} modality is: {prompt}")
         
         if args.add_PETF_LLM:
-            
+
             IS_LLAMA3 = True if args.llm_model == "meta-llama/Meta-Llama-3-8B" or args.llm_model == "meta-llama/Meta-Llama-3.1-8B" or args.llm_model == "meta-llama/Llama-3.2-1B" else False
             IS_LLAMA3_2_3B = True if args.llm_model == "meta-llama/Llama-3.2-3B" else False
             IS_TINYLLAMA = True if args.llm_model == "TinyLlama/TinyLlama_v1.1" else False
