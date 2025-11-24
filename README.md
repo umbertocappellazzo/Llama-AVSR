@@ -230,7 +230,7 @@ We release the best ckpt for each task.
 
 In our paper, [Mitigating Attention Sinks and Massive Activations in Audio-Visual Speech Recognition with LLMs](https://arxiv.org/pdf/2510.22603), we show that massive activations and attention sinks in intermediate tokens arise due to high alignment with the BOS (begin-of-sequence) sink token. To address this, we introduce a decorrelation (sink) loss that minimizes the cosine similarity between the BOS token and the remaining input tokens. This simple modification effectively mitigates attention sinks and massive activations. In addition to stabilizing the internal dynamics, the sink loss also improves word error rate (WER) at high feature downsampling rates, while maintaining stable performance at lower downsampling rates.
 
-We further add a LayerNorm before feature fusion in the LLM to improve the convergence behavior during training. This pre-fusion normalization leads to more stable optimization without degrading recognition performance. To disable the pre-fusion LayerNorm in the projector, set `--no-layernorm-projector True` in the training script. To enable the proposed sink loss during training, set `--add-sink-loss True`.
+We further add a LayerNorm before feature fusion in the LLM to improve the convergence behavior during training. This pre-fusion normalization leads to more stable optimization without degrading recognition performance. To add the pre-fusion LayerNorm in the projector, set `--layernorm-projector True` in the training script. To enable the proposed sink loss during training, set `--add-sink-loss True`.
 
 We release checkpoints for audio-visual speech recognition (ASR) and visual speech recognition (VSR) models trained on LRS2 and LRS3, respectively, at downsampling rates of 32 and 5. These checkpoints highlight the performance improvements obtained after mitigating intermediate attention sinks.
 
@@ -247,6 +247,16 @@ We release checkpoints for audio-visual speech recognition (ASR) and visual spee
 | [ASR_LRS2_avg-pooling_AVH-Large_LoRA_Llama3.2-3B_Adown32.pth](https://drive.google.com/file/d/1LgR6-CerFaH-tNYfsakeLqHda05yuz34/view?usp=sharing) | 13.16 |
 | [ASR_LRS2_avg-pooling_AVH-Large_LoRA_Llama3.2-3B_Adown32_sink_loss.pth](https://drive.google.com/file/d/185nMK_1j_rGtPaPML13CLfPCLdClODDe/view?usp=sharing) | **11.38** |
 
+<!-- **Example 3.**
+
+We run the inference for the VSR pre-trained ckpt with sink loss for in the model zoo. The command is as follows:
+
+```Shell
+python eval.py --exp-name VSR_inference --modality video --project-wandb wandb_project_name \
+--pretrained-model-path path_to_asr_ckpt --root-dir path_to_root_dir --llm-model meta-llama/Meta-Llama-3.1-8B \
+--audio-encoder-name openai/whisper-medium.en --unfrozen_modules peft_llm --add_PETF_LLM lora \
+--reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --max-dec-tokens 32 --num-beams 15 --test-file lrs3_test_transcript_lengths_seg24s_LLM_lowercase.csv
+``` -->
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=umbertocappellazzo/Llama-AVSR&type=Date)](https://www.star-history.com/#umbertocappellazzo/Llama-AVSR&Date)

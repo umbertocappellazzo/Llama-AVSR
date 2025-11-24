@@ -203,7 +203,7 @@ def parse_args():
         help="Flag to use debug level for logging",
     )
     parser.add_argument(
-        "--no-layernorm-projector",
+        "--layernorm-projector",
         default=False,
         type=bool,
         help="Removes LayerNorm from the audio and video projectors",

@@ -261,7 +261,7 @@ def parse_args():
     )
     parser.add_argument(
         "--num-average-epochs",
-        default=4,
+        default=1,
         type=int,
     )
     parser.add_argument(
@@ -364,7 +364,7 @@ def parse_args():
         help="Weight of sink loss in reference to cross entropy loss. Note: add-sink-loss must be True",
     )
     parser.add_argument(
-        "--no-layernorm-projector",
+        "--layernorm-projector",
         default=False,
         type=bool,
         help="Removes LayerNorm from the audio and video projectors",

@@ -26,7 +26,7 @@ class AVSR_LLMs(nn.Module):
                  pretrain_avhubert_enc_audiovisual, use_lora_avhubert, llm_model, hidden_size, intermediate_size, tokenizer, prompt, pad_id, 
                  downsample_ratio_audio, downsample_ratio_video, downsample_ratio_audiovisual, single_projector_avhubert, audio_encoder_name, 
                  unfrozen_modules, max_dec_tokens, num_beams, PETF_LLM_name = None, peft_config_llm = None, add_sink_loss = False, sink_loss_factor = 10000,
-                 remove_layernorm_from_projector = False
+                 layernorm_projector = False
                  ):
         
         super().__init__()
@@ -47,7 +47,7 @@ class AVSR_LLMs(nn.Module):
         self.single_projector_avhubert = single_projector_avhubert
         self.add_sink_loss = add_sink_loss
         self.sink_loss_factor = sink_loss_factor
-        self.remove_layernorm_from_projector = remove_layernorm_from_projector
+        self.layernorm_projector = layernorm_projector
             
         if modality == "audio" or modality == "audiovisual":
             
@@ -75,7 +75,7 @@ class AVSR_LLMs(nn.Module):
                 audio_dim =self.audio_encoder.config.hidden_size
                 
             # The projector is a two-layer MLP.
-            if self.remove_layernorm_from_projector:
+            if not self.layernorm_projector:
                 self.audio_proj = nn.Sequential(nn.Linear(audio_dim*self.downsample_ratio_audio, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
             else:
                 self.audio_proj = nn.Sequential(nn.Linear(audio_dim*self.downsample_ratio_audio, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
@@ -115,7 +115,7 @@ class AVSR_LLMs(nn.Module):
             self.video_encoder.requires_grad_(False)
             video_dim = 1024
              
-            if self.remove_layernorm_from_projector:
+            if not self.layernorm_projector:
                 self.video_proj = nn.Sequential(nn.Linear(video_dim*self.downsample_ratio_video, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
             else:
                 self.video_proj = nn.Sequential(nn.Linear(video_dim*self.downsample_ratio_video, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
@@ -153,12 +153,12 @@ class AVSR_LLMs(nn.Module):
              audiovisual_dim = 1024     
              
              if self.single_projector_avhubert:
-                 if self.remove_layernorm_from_projector:
+                 if not self.layernorm_projector:
                     self.audiovisual_proj = nn.Sequential(nn.Linear(audiovisual_dim*self.downsample_ratio_audiovisual, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
                  else:
                     self.audiovisual_proj = nn.Sequential(nn.Linear(audiovisual_dim*self.downsample_ratio_audiovisual, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
              else:
-                 if self.remove_layernorm_from_projector:
+                 if not self.layernorm_projector:
                      self.audio_proj = nn.Sequential(nn.Linear(audiovisual_dim*self.downsample_ratio_audio, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
                      self.video_proj = nn.Sequential(nn.Linear(audiovisual_dim*self.downsample_ratio_video, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
                  else:
