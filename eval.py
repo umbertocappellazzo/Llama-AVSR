@@ -97,7 +97,8 @@ def parse_args():
         help="LLM model name",
         choices= ["TinyLlama/TinyLlama_v1.1", "meta-llama/Llama-2-13b-hf", 
                   "meta-llama/Llama-2-7b-hf", "meta-llama/Meta-Llama-3.1-8B",
-                  "meta-llama/Llama-3.2-1B","meta-llama/Llama-3.2-3B"
+                  "meta-llama/Llama-3.2-1B","meta-llama/Llama-3.2-3B",
+                  "meta-llama/Meta-Llama-3-8B"
                  ]
     )
     parser.add_argument(

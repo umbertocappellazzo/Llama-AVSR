@@ -266,7 +266,7 @@ class AVSR_LLMs(nn.Module):
             return outputs.loss + decor_loss, decor_loss
         
         else: # Inference step: we decode starting from the audio/video tokens + bos. 
-            if self.llm_model == "meta-llama/Meta-Llama-3.1-8B":
+            if self.llm_model ==  "meta-llama/Meta-Llama-3-8B" or self.llm_model == "meta-llama/Meta-Llama-3.1-8B" or self.llm_model == "meta-llama/Llama-3.2-1B" or self.llm_model == "meta-llama/Llama-3.2-3B":
                 decoded_ids = self.llm.generate(inputs_embeds = text_embeddings, max_new_tokens = self.max_dec_tokens, num_beams=self.num_beams, eos_token_id = self.tokenizer.vocab["<|end_of_text|>"], 
                                                 bos_token_id = self.tokenizer.vocab["<|begin_of_text|>"], 
                                                 pad_token_id = self.tokenizer.vocab["<pad>"],
