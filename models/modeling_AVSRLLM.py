@@ -25,8 +25,8 @@ class AVSR_LLMs(nn.Module):
     def __init__(self, modality, pretrain_avhubert_enc_video, pretrain_avhubert_enc_audio, 
                  pretrain_avhubert_enc_audiovisual, use_lora_avhubert, llm_model, hidden_size, intermediate_size, tokenizer, prompt, pad_id, 
                  downsample_ratio_audio, downsample_ratio_video, downsample_ratio_audiovisual, single_projector_avhubert, audio_encoder_name, 
-                 unfrozen_modules, max_dec_tokens, num_beams, PETF_LLM_name = None, peft_config_llm = None, add_sink_loss = False, sink_loss_factor = 10000,
-                 layernorm_projector = False
+                 unfrozen_modules, max_dec_tokens, num_beams, compression_mode, PETF_LLM_name = None, peft_config_llm = None, add_sink_loss = False,
+                 sink_loss_factor = 10000, layernorm_projector = False
                  ):
         
         super().__init__()
@@ -48,6 +48,7 @@ class AVSR_LLMs(nn.Module):
         self.add_sink_loss = add_sink_loss
         self.sink_loss_factor = sink_loss_factor
         self.layernorm_projector = layernorm_projector
+        self.compression_mode = compression_mode
             
         if modality == "audio" or modality == "audiovisual":
             
@@ -75,10 +76,20 @@ class AVSR_LLMs(nn.Module):
                 audio_dim =self.audio_encoder.config.hidden_size
                 
             # The projector is a two-layer MLP.
-            if not self.layernorm_projector:
-                self.audio_proj = nn.Sequential(nn.Linear(audio_dim*self.downsample_ratio_audio, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+            if self.compression_mode == "stack":
+                if not self.layernorm_projector:
+                    self.audio_proj = nn.Sequential(nn.Linear(audio_dim*self.downsample_ratio_audio, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+                else:
+                    self.audio_proj = nn.Sequential(nn.Linear(audio_dim*self.downsample_ratio_audio, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
+            elif self.compression_mode == "avg-pooling":
+                self.avg_pool_audio = nn.AvgPool1d(self.downsample_ratio_audio)
+                if not self.layernorm_projector:
+                    self.audio_proj = nn.Sequential(nn.Linear(audio_dim, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+                else:
+                    self.audio_proj = nn.Sequential(nn.Linear(audio_dim, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
             else:
-                self.audio_proj = nn.Sequential(nn.Linear(audio_dim*self.downsample_ratio_audio, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
+                raise Exception("Compression mode not recognized.")
+
             
         if modality == "video" or modality == "audiovisual":
             assert pretrain_avhubert_enc_video is not None, ("The AV-HuBERT pre-trained model must be defined!")
@@ -114,12 +125,20 @@ class AVSR_LLMs(nn.Module):
                 
             self.video_encoder.requires_grad_(False)
             video_dim = 1024
-             
-            if not self.layernorm_projector:
-                self.video_proj = nn.Sequential(nn.Linear(video_dim*self.downsample_ratio_video, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
-            else:
-                self.video_proj = nn.Sequential(nn.Linear(video_dim*self.downsample_ratio_video, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
             
+            if self.compression_mode == "stack":
+                if not self.layernorm_projector:
+                    self.video_proj = nn.Sequential(nn.Linear(video_dim*self.downsample_ratio_video, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+                else:
+                    self.video_proj = nn.Sequential(nn.Linear(video_dim*self.downsample_ratio_video, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
+            elif self.compression_mode == "avg-pooling":
+                self.avg_pool_video = nn.AvgPool1d(self.downsample_ratio_video)
+                if not self.layernorm_projector:
+                    self.video_proj = nn.Sequential(nn.Linear(video_dim, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size))
+                else:
+                    self.video_proj = nn.Sequential(nn.Linear(video_dim, intermediate_size), nn.ReLU(), nn.Linear(intermediate_size, hidden_size), nn.LayerNorm(hidden_size))
+            else:
+                raise Exception("Compression mode not recognized.")
         
         if modality == "audiovisual_avhubert":
              print("Instantiating AV-HuBERT for audio-visual!")
@@ -467,8 +486,13 @@ class AVSR_LLMs(nn.Module):
             
         video_enc = self.video_encoder.extract_finetune(source={'video': torch.reshape(videos,(-1,videos.shape[2],videos.shape[1],videos.shape[3],videos.shape[-1])),'audio': None})[0]
         if self.downsample_ratio_video != 1:
-            video_enc = [video_enc[:, x:x + self.downsample_ratio_video, :].view(video_enc.shape[0], 1, -1) for x in range(0, video_enc.shape[1], self.downsample_ratio_video)]
-            video_enc = torch.stack(video_enc, dim=1).squeeze(2)
+            if self.compression_mode == "stack":
+                video_enc = [video_enc[:, x:x + self.downsample_ratio_video, :].view(video_enc.shape[0], 1, -1) for x in range(0, video_enc.shape[1], self.downsample_ratio_video)]
+                video_enc = torch.stack(video_enc, dim=1).squeeze(2)
+            elif self.compression_mode == "avg-pooling":
+                video_enc = video_enc.transpose(1,2).contiguous()
+                video_enc = self.avg_pool_video(video_enc)
+                video_enc = video_enc.transpose(1,2).contiguous()
             
         return video_enc
     
@@ -486,13 +510,18 @@ class AVSR_LLMs(nn.Module):
             audio_enc = audio_enc[:, 0: max(int(max_len/16000*50), 25) , :]
             
             if self.downsample_ratio_audio != 1:
-                audio_temp = audio_enc
-                audio_enc = [audio_temp[:, x:x + self.downsample_ratio_audio, :].view(audio_temp.shape[0], 1, -1) for x in range(0, audio_temp.shape[1], self.downsample_ratio_audio)]
-                rest = audio_temp.shape[1] % self.downsample_ratio_audio
-                if rest == 0:
-                    audio_enc = torch.stack(audio_enc, dim=1).squeeze(2) 
-                else: 
-                    audio_enc = torch.stack(audio_enc[:-1], dim=1).squeeze(2)
+                if self.compression_mode == "stack":
+                    audio_temp = audio_enc
+                    audio_enc = [audio_temp[:, x:x + self.downsample_ratio_audio, :].view(audio_temp.shape[0], 1, -1) for x in range(0, audio_temp.shape[1], self.downsample_ratio_audio)]
+                    rest = audio_temp.shape[1] % self.downsample_ratio_audio
+                    if rest == 0:
+                        audio_enc = torch.stack(audio_enc, dim=1).squeeze(2) 
+                    else: 
+                        audio_enc = torch.stack(audio_enc[:-1], dim=1).squeeze(2)
+                elif self.compression_mode == "avg-pooling":
+                    audio_enc = audio_enc.transpose(1,2).contiguous()
+                    audio_enc = self.avg_pool_audio(audio_enc)
+                    audio_enc = audio_enc.transpose(1,2).contiguous()
                 
         # We also tested the case where we AV-HuBERT to process the audio.
         elif "av-hubert" in self.audio_encoder_name:

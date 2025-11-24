@@ -102,7 +102,8 @@ class ModelModule_LLM(LightningModule):
                                    peft_config_llm = lora_config_llm,
                                    add_sink_loss = args.add_sink_loss,
                                    sink_loss_factor = args.sink_loss_factor,
-                                   layernorm_projector = args.layernorm_projector
+                                   layernorm_projector = args.layernorm_projector,
+                                   compression_mode = args.compression_mode
                                    )
             
             n_parameters_learn = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
@@ -130,7 +131,8 @@ class ModelModule_LLM(LightningModule):
                                    num_beams = args.num_beams,
                                    add_sink_loss = args.add_sink_loss,
                                    sink_loss_factor = args.sink_loss_factor,
-                                   layernorm_projector = args.layernorm_projector
+                                   layernorm_projector = args.layernorm_projector,
+                                   compression_mode = args.compression_mode
                                    )
             
             n_parameters_learn = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
