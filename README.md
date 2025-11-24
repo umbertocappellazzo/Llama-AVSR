@@ -247,16 +247,19 @@ We release checkpoints for audio-visual speech recognition (ASR) and visual spee
 | [ASR_LRS2_avg-pooling_AVH-Large_LoRA_Llama3.2-3B_Adown32.pth](https://drive.google.com/file/d/1LgR6-CerFaH-tNYfsakeLqHda05yuz34/view?usp=sharing) | 13.16 |
 | [ASR_LRS2_avg-pooling_AVH-Large_LoRA_Llama3.2-3B_Adown32_sink_loss.pth](https://drive.google.com/file/d/185nMK_1j_rGtPaPML13CLfPCLdClODDe/view?usp=sharing) | **11.38** |
 
-<!-- **Example 3.**
+**Example 3.**
 
 We run the inference for the VSR pre-trained ckpt with sink loss for in the model zoo. The command is as follows:
 
 ```Shell
-python eval.py --exp-name VSR_inference --modality video --project-wandb wandb_project_name \
---pretrained-model-path path_to_asr_ckpt --root-dir path_to_root_dir --llm-model meta-llama/Meta-Llama-3.1-8B \
---audio-encoder-name openai/whisper-medium.en --unfrozen_modules peft_llm --add_PETF_LLM lora \
---reduction_lora 64 --alpha 8 --downsample-ratio-audio 3 --max-dec-tokens 32 --num-beams 15 --test-file lrs3_test_transcript_lengths_seg24s_LLM_lowercase.csv
-``` -->
+python eval.py --exp-name VSR_inference --modality video --compression-mode avg-pooling \
+--pretrain-avhubert-enc-video-path path_to_avhubert_ckpt --llm-model meta-llama/Llama-3.2-3B \
+--hidden-size 3072 --use-lora-avhubert True --unfrozen_modules peft_llm lora_avhubert --add_PETF_LLM lora \
+--reduction_lora 32 --alpha 4 --downsample-ratio-video 5 --layernorm-projector True \
+--project-wandb wandb_project_name --pretrained-model-path path_to_asr_ckpt --root-dir path_to_root_dir  \
+--max-dec-tokens 32 --num-beams 15 --test-file lrs3_test_transcript_lengths_seg24s_LLM_lowercase.csv
+```
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=umbertocappellazzo/Llama-AVSR&type=Date)](https://www.star-history.com/#umbertocappellazzo/Llama-AVSR&Date)

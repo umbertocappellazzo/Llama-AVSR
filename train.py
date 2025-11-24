@@ -373,7 +373,7 @@ def parse_args():
     )
     parser.add_argument(
         "--compression-mode",
-        default= None,
+        default= "stack",
         type= str,
         help= "How we compress the tokens.",
         choices= ["avg-pooling","stack"]
