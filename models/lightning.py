@@ -19,6 +19,9 @@ llm_size = {"TinyLlama/TinyLlama_v1.1": 2048,
             "meta-llama/Llama-2-13b-hf": 5120,
             "meta-llama/Llama-2-7b-hf": 4096,
             "meta-llama/Meta-Llama-3.1-8B": 4096,
+            "meta-llama/Llama-3.2-1B": 2048,
+            "meta-llama/Llama-3.2-3B": 3072,
+            "meta-llama/Meta-Llama-3-8B": 4096
             }
 
 
@@ -40,7 +43,7 @@ class ModelModule_LLM(LightningModule):
         # Apparently, some LLMs don't rely on FastTokenizer and it seems like they don't append the EOS token even though you set
         # it explicitly. In my case, this happens for LLama3. More details at: https://github.com/huggingface/transformers/issues/22794.
         
-        if args.llm_model == "meta-llama/Meta-Llama-3.1-8B":
+        if args.llm_model == "meta-llama/Meta-Llama-3-8B" or args.llm_model == "meta-llama/Meta-Llama-3.1-8B" or args.llm_model == "meta-llama/Llama-3.2-1B" or args.llm_model == "meta-llama/Llama-3.2-3B":
             bos = self.tokenizer.bos_token
             eos = self.tokenizer.eos_token
             
@@ -74,10 +77,11 @@ class ModelModule_LLM(LightningModule):
         print(f"The prompt used for the {args.modality} modality is: {prompt}")
         
         if args.add_PETF_LLM:
-            
-            IS_LLAMA3 = True if args.llm_model == "meta-llama/Meta-Llama-3.1-8B" else False
+
+            IS_LLAMA3 = True if args.llm_model == "meta-llama/Meta-Llama-3-8B" or args.llm_model == "meta-llama/Meta-Llama-3.1-8B" or args.llm_model == "meta-llama/Llama-3.2-1B" else False
+            IS_LLAMA3_2_3B = True if args.llm_model == "meta-llama/Llama-3.2-3B" else False
             IS_TINYLLAMA = True if args.llm_model == "TinyLlama/TinyLlama_v1.1" else False
-            lora_config_llm = LoRA_config(args.reduction_lora, args.alpha, IS_LLAMA3, IS_TINYLLAMA)
+            lora_config_llm = LoRA_config(args.reduction_lora, args.alpha, IS_LLAMA3, IS_TINYLLAMA, IS_LLAMA3_2_3B)
             
             self.model = AVSR_LLMs(modality = args.modality,  
                                    pretrain_avhubert_enc_video = args.pretrain_avhubert_enc_video_path, 
@@ -102,7 +106,8 @@ class ModelModule_LLM(LightningModule):
                                    peft_config_llm = lora_config_llm,
                                    add_sink_loss = args.add_sink_loss,
                                    sink_loss_factor = args.sink_loss_factor,
-                                   remove_layernorm_from_projector = args.no_layernorm_projector
+                                   layernorm_projector = args.layernorm_projector,
+                                   compression_mode = args.compression_mode
                                    )
             
             n_parameters_learn = sum(p.numel() for p in self.model.parameters() if p.requires_grad)
@@ -130,7 +135,8 @@ class ModelModule_LLM(LightningModule):
                                    num_beams = args.num_beams,
                                    add_sink_loss = args.add_sink_loss,
                                    sink_loss_factor = args.sink_loss_factor,
-                                   remove_layernorm_from_projector = args.no_layernorm_projector
+                                   layernorm_projector = args.layernorm_projector,
+                                   compression_mode = args.compression_mode
                                    )
             
             n_parameters_learn = sum(p.numel() for p in self.model.parameters() if p.requires_grad)

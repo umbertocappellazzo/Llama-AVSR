@@ -96,13 +96,16 @@ def parse_args():
         type=str,
         help="LLM model name",
         choices= ["TinyLlama/TinyLlama_v1.1", "meta-llama/Llama-2-13b-hf", 
-                  "meta-llama/Llama-2-7b-hf", "meta-llama/Meta-Llama-3.1-8B"
+                  "meta-llama/Llama-2-7b-hf", "meta-llama/Meta-Llama-3.1-8B",
+                  "meta-llama/Llama-3.2-1B","meta-llama/Llama-3.2-3B",
+                  "meta-llama/Meta-Llama-3-8B"
                  ]
     )
     parser.add_argument(
         "--audio-encoder-name",
         default = None,
-        type = str
+        type = str,
+        choices= ["openai/whisper-small.en", "openai/whisper-medium.en", "microsoft/wavlm-large", "av-hubert"]
         )
     parser.add_argument(
         "--intermediate-size",
@@ -203,10 +206,29 @@ def parse_args():
         help="Flag to use debug level for logging",
     )
     parser.add_argument(
-        "--no-layernorm-projector",
+        "--add-sink-loss",
+        type=bool,
+        default=False,
+        help="[Train only] Add decorrelation loss to avoid intermediate attention sinks",
+    )
+    parser.add_argument(
+        "--sink-loss-factor",
+        type=float,
+        default=10000,
+        help="[Train only] Weight of sink loss in reference to cross entropy loss. Note: add-sink-loss must be True",
+    )
+    parser.add_argument(
+        "--layernorm-projector",
         default=False,
         type=bool,
         help="Removes LayerNorm from the audio and video projectors",
+    )
+    parser.add_argument(
+        "--compression-mode",
+        default= "stack",
+        type= str,
+        help= "How we compress the tokens.",
+        choices= ["avg-pooling","stack"]
     )
     
     return parser.parse_args()

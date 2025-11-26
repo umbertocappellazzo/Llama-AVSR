@@ -24,6 +24,7 @@ class LoRA_config:
     ALPHA: int = 1
     IS_LLAMA3: bool = False
     IS_TINYLLAMA: bool = False
+    IS_LLAMA3_2_3B: bool = False
     
     
 
@@ -41,6 +42,8 @@ class LlamaSdpaAttention_lora(LlamaSdpaAttention):
         
         if lora_config.IS_LLAMA3: # grouped query attention (GQA) in action!! 
             self.lora_up_V = nn.Linear(round(hid_size/self.rank), hid_size//4, bias= False)
+        elif lora_config.IS_LLAMA3_2_3B:
+            self.lora_up_V = nn.Linear(round(hid_size/self.rank), hid_size//3, bias= False)
         elif lora_config.IS_TINYLLAMA:
             self.lora_up_V = nn.Linear(round(hid_size/self.rank), hid_size//8, bias= False)
         else:    

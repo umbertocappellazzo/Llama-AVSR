@@ -38,7 +38,7 @@ def collate_LLM(batch, tokenizer, modality, is_trainval= True):
     if tokenizer.name_or_path in ["TinyLlama/TinyLlama_v1.1", "meta-llama/Llama-2-13b-hf", "meta-llama/Llama-2-7b-hf"]:
         tokens = tokenizer(tokens, padding= 'longest', return_tensors="pt").input_ids if is_trainval else torch.tensor([tokenizer.vocab["<s>"]]).unsqueeze(0)
     else:
-        assert tokenizer.name_or_path == "meta-llama/Meta-Llama-3.1-8B"
+        assert tokenizer.name_or_path == "meta-llama/Meta-Llama-3-8B" or tokenizer.name_or_path == "meta-llama/Meta-Llama-3.1-8B" or tokenizer.name_or_path == "meta-llama/Llama-3.2-1B" or tokenizer.name_or_path == "meta-llama/Llama-3.2-3B"
         tokens = tokenizer(tokens, padding= 'longest', return_tensors="pt").input_ids if is_trainval else torch.tensor([tokenizer.vocab["<|begin_of_text|>"]]).unsqueeze(0)
     
     if is_trainval: # We need to set to -100 the padding tokens for the loss computation.
