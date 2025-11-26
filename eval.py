@@ -209,7 +209,13 @@ def parse_args():
         "--add-sink-loss",
         type=bool,
         default=False,
-        help="Add decorrelation loss to avoid intermediate attention sinks",
+        help="[Train only] Add decorrelation loss to avoid intermediate attention sinks",
+    )
+    parser.add_argument(
+        "--sink-loss-factor",
+        type=float,
+        default=10000,
+        help="[Train only] Weight of sink loss in reference to cross entropy loss. Note: add-sink-loss must be True",
     )
     parser.add_argument(
         "--layernorm-projector",
