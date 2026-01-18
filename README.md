@@ -4,9 +4,10 @@ This is the official repository for the papers "[**Large Language Models are Str
 Recognition Learners**](https://arxiv.org/pdf/2409.12319)", *U. Cappellazzo*, *M. Kim*, *H. Chen*, *P. Ma*, *S. Petridis*, *D. Falavigna*, *A. Brutti*, *M. Pantic*, and "[**Mitigating Attention Sinks and Massive Activations in Audio-Visual Speech Recognition with LLMs**](https://arxiv.org/pdf/2510.22603)", *Anand*, *U. Cappellazzo*, *S. Petridis*, *M. Pantic*.
 
 ## 📣 News 📣
+- ```[2026.01]``` Our paper *Mitigating Attention Sinks and Massive Activations in Audio-Visual Speech Recognition with LLMs* has been accepted to **IEEE ICASSP** 2026 🚀🚀.
 - ```[2025.11]``` We update the **code** of Llama-AVSR and release new **ckpts**, with improvements and analyses of attention sinks and massive activations folllowing our recent [**paper**](https://arxiv.org/pdf/2510.22603) 🔥🔥.
 - ```[2025.03]``` We release **code** and **ckpts** of Llama-AVSR, and the camera-ready version of the [**paper**](https://arxiv.org/abs/2409.12319) 🔥🔥.
-- ```[2024.12]``` Our paper has been accepted for publication at **ICASSP** 2025 🚀🚀.
+- ```[2024.12]``` Our paper Llama-AVSR has been accepted for publication at **ICASSP** 2025 🚀🚀.
 - ```[2024.09]``` We release the [**arXiv paper**](https://arxiv.org/abs/2409.12319) of Llama-AVSR 🦙.
 
 
